@@ -306,13 +306,6 @@ public class Board {
 
 	}
 
-	public int[] getArrayIndex(int[] arr, int value) {
-
-		int[] indices = IntStream.range(0, arr.length).filter(i -> arr[i] == value).toArray();
-
-		return indices;
-
-	}
 
 	public synchronized int getBlockedCount(PieceColor color) {
 		int count = 0;
@@ -326,16 +319,13 @@ public class Board {
 
 	public synchronized List<Piece> getEmpty() {
 
-		/*
-		 * List<Piece> emptyPieces = new ArrayList<Piece>(); for(Piece piece :
-		 * pieces){ if(piece.color == PieceColor.EMPTY &&
-		 * MoveValidator.validPositions[piece.x + piece.y * SIZE])
-		 * emptyPieces.add(piece); } return emptyPieces;
-		 */
-		int[] index = getArrayIndex(pieces, 0);
+
 		List<Piece> emptyPieces = new ArrayList<Piece>();
-		for (int i : index) {
-			emptyPieces.add(new Piece(PieceColor.EMPTY, i));
+		int index = 0;
+		for (int i : pieces) {
+			if(i == 0)
+				emptyPieces.add(new Piece(PieceColor.EMPTY, index));
+			index++;
 		}
 
 		return emptyPieces;
@@ -376,10 +366,14 @@ public class Board {
 
 	public synchronized List<Piece> getPiecesByColor(PieceColor color) {
 
-		int[] index = getArrayIndex(pieces, colorToValue(color));
+		//int[] index = getArrayIndex(pieces, colorToValue(color));
+		int colorV = colorToValue(color);
 		List<Piece> piecesByColor = new ArrayList<Piece>();
-		for (int i : index) {
-			piecesByColor.add(new Piece(color, i));
+		int index = 0;
+		for (int i : pieces) {
+			if(i == colorV)
+				piecesByColor.add(new Piece(color, index));
+			index++;
 		}
 
 		return piecesByColor;
@@ -387,8 +381,14 @@ public class Board {
 	}
 
 	public synchronized int getPiecesByColorCount(PieceColor color) {
-		int[] index = getArrayIndex(pieces, colorToValue(color));
-		return index.length;
+		int colorV = colorToValue(color);
+		int index = 0;
+		for (int i : pieces) {
+			if(i == colorV)
+				index++;
+		}
+		
+		return index;
 	}
 
 	public synchronized int getPiecesSetCount(PieceColor color) {
