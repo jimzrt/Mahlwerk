@@ -1,7 +1,6 @@
 package com.mahlwerk.ai;
 
-import java.util.ArrayList;
-import java.util.Collections;
+
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -14,7 +13,6 @@ import com.mahlwerk.base.Game.Gamestate;
 import com.mahlwerk.base.Move;
 import com.mahlwerk.base.Piece;
 import com.mahlwerk.base.Piece.PieceColor;
-import com.sun.swing.internal.plaf.synth.resources.synth;
 
 
 public class AlphaBetaPruning {
