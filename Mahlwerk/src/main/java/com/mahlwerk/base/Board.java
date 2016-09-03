@@ -41,13 +41,13 @@ public class Board {
 
 	public int whiteStonesSet = 0;
 
-	long[][] zobrist = new long[SIZE * SIZE][3];
+	//long[][] zobrist = new long[SIZE * SIZE][3];
 
 	public Board() {
 
-		for (int square = 0; square < zobrist.length; square++)
-			for (int side = 0; side < zobrist[square].length; side++)
-				zobrist[square][side] = (long) (Math.random() * Long.MAX_VALUE);
+//		for (int square = 0; square < zobrist.length; square++)
+//			for (int side = 0; side < zobrist[square].length; side++)
+//				zobrist[square][side] = (long) (Math.random() * Long.MAX_VALUE);
 
 		for (int i = 0; i < SIZE; i++) {
 			for (int j = 0; j < SIZE; j++) {
@@ -63,7 +63,7 @@ public class Board {
 
 		buildMillMap();
 
-		hashId = computeKey();
+	//	hashId = computeKey();
 
 	}
 
@@ -202,17 +202,17 @@ public class Board {
 		return -1;
 	}
 
-	long computeKey() {
-		long hashKey = 0;
-		for (int square = 0; square < pieces.length; square++) {
-			if (validPositions[square]) {
-				int side = pieces[square];
-				hashKey ^= zobrist[square][side];
-			}
-
-		}
-		return hashKey;
-	}
+//	long computeKey() {
+//		long hashKey = 0;
+//		for (int square = 0; square < pieces.length; square++) {
+//			if (validPositions[square]) {
+//				int side = pieces[square];
+//			//	hashKey ^= zobrist[square][side];
+//			}
+//
+//		}
+//		return hashKey;
+//	}
 
 	public synchronized void decrementMillCount(PieceColor color) {
 		switch (color) {
@@ -517,11 +517,11 @@ public class Board {
 				if (!validPositions[j + i * SIZE])
 					row[j] = "";
 				else if (pieces[j + i * SIZE] == 1) {
-					row[j] = "� W �";
+					row[j] = "| W |";
 				} else if (pieces[j + i * SIZE] == 2) {
-					row[j] = "� B �";
+					row[j] = "| B |";
 				} else {
-					row[j] = "�   �";
+					row[j] = "|   |";
 				}
 			}
 			System.out.format("%-7s%-7s%-7s%-7s%-7s%-7s%-7s%-7s", "\n  |", row[0].equals("") ? "     " : "+---+",
@@ -656,17 +656,17 @@ public class Board {
 		return millPieces.size();
 	}
 
-	void updateKey(int index, int color) {
-		hashId = hashId ^ zobrist[index][color];
-	}
-
-	void updateKey(int x, int y, PieceColor color) {
-		hashId = hashId ^ zobrist[x + y * SIZE][colorToValue(color)];
-	}
-
-	void updateKey(int index, PieceColor color) {
-		hashId = hashId ^ zobrist[index][colorToValue(color)];
-	}
+//	void updateKey(int index, int color) {
+//		hashId = hashId ^ zobrist[index][color];
+//	}
+//
+//	void updateKey(int x, int y, PieceColor color) {
+//		hashId = hashId ^ zobrist[x + y * SIZE][colorToValue(color)];
+//	}
+//
+//	void updateKey(int index, PieceColor color) {
+//		hashId = hashId ^ zobrist[index][colorToValue(color)];
+//	}
 
 	public synchronized int zwickMillCount(PieceColor color) {
 		int count = 0;

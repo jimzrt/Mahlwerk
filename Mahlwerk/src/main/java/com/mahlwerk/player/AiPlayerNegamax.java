@@ -13,13 +13,13 @@ import com.mahlwerk.base.Piece.PieceColor;
 public class AiPlayerNegamax implements IPlayerHandler {
 
 	private PieceColor color;
-	private int config = 0;
+	private int maxTime = 0;
 	private Game game;
 	private Gamestate myTurn;
 
 	ExecutorService pool = Executors.newSingleThreadExecutor();
 
-	private Runnable r = new Runnable() {
+	private Runnable MoveWorker = new Runnable() {
 		public void run() {
 			try {
 				Thread.sleep(100);
@@ -32,8 +32,8 @@ public class AiPlayerNegamax implements IPlayerHandler {
 
 	AlphaBetaPruning solver;
 
-	public AiPlayerNegamax(int i) {
-		config = i;
+	public AiPlayerNegamax(int maxTime) {
+		this.maxTime = maxTime;
 	}
 
 	@Override
@@ -64,7 +64,7 @@ public class AiPlayerNegamax implements IPlayerHandler {
 
 			if (game.gamePhase == Gamephase.SetStones) {
 				// setting stones
-				Move bestMove = solver.getBestSetNegaMax();
+				Move bestMove = solver.getBestSet();
 				if (game.gameState == myTurn) {
 					game.onMoveMake(this, bestMove);
 
@@ -72,7 +72,7 @@ public class AiPlayerNegamax implements IPlayerHandler {
 
 			} else if (game.gamePhase == Gamephase.MoveStones || game.gamePhase == Gamephase.Endgame) {
 
-				Move bestMove = solver.getSuperMoveNegamax();
+				Move bestMove = solver.getBestMove();
 				if (game.gameState == myTurn) {
 
 					game.onMoveMake(this, bestMove);
@@ -89,7 +89,7 @@ public class AiPlayerNegamax implements IPlayerHandler {
 
 		game.addObserver(this);
 
-		solver = new AlphaBetaPruning(game, this.color, 15, config);
+		solver = new AlphaBetaPruning(game, this.color, 15, maxTime);
 
 	}
 
@@ -129,7 +129,7 @@ public class AiPlayerNegamax implements IPlayerHandler {
 		}
 
 		if (!pool.isShutdown())
-			pool.submit(r);
+			pool.submit(MoveWorker);
 
 	}
 
