@@ -1,9 +1,0 @@
-#grid {
--fx-background-color: linear-gradient(to left, #141E30 , #243B55);
-
--fx-background-image: url("../img/muehle9.png");
--fx-background-repeat: stretch;   
--fx-background-position: center center;
--fx-background-size: 500px 500px; 
-
-}
