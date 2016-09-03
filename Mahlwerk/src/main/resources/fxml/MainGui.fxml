@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ChoiceBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.effect.MotionBlur?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+
+<AnchorPane prefHeight="500.0" prefWidth="500.0" styleClass="background" stylesheets="@../css/DarkTheme.css" xmlns="http://javafx.com/javafx/8.0.60" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.mahlwerk.main.MainGuiController">
+   <children>
+      <ImageView fitHeight="500.0" fitWidth="580.0" opacity="0.09" pickOnBounds="true" preserveRatio="true">
+         <image>
+            <Image url="@../img/mhle2.png" />
+         </image>
+         <effect>
+            <MotionBlur radius="29.93" />
+         </effect>
+      </ImageView>
+      <ChoiceBox fx:id="playerWhite" layoutX="250.0" layoutY="121.0" prefWidth="150.0" style="-fx-background-color: rgba(0,0,0,0);" />
+      <ChoiceBox fx:id="playerBlack" layoutX="250.0" layoutY="219.0" prefWidth="150.0" style="-fx-background-color: rgba(0,0,0,0);" />
+      <Label layoutX="85.0" layoutY="126.0" text="Spieler Weiss" />
+      <Label layoutX="85.0" layoutY="224.0" text="Spieler Schwarz" />
+      <Button fx:id="startButton" layoutX="216.0" layoutY="332.0" mnemonicParsing="false" styleClass="flatButton" text="Starten" />
+      <TextField fx:id="thinkT" alignment="CENTER_RIGHT" layoutX="312.0" layoutY="161.0" prefHeight="37.0" prefWidth="88.0" style="-fx-background-color: rgba(255,255,255,0.2); -fx-text-fill: #FFF;" text="2000" visible="false" />
+      <Label fx:id="thinkL" layoutX="196.0" layoutY="169.0" text="Denkzeit (ms)" visible="false" />
+      <TextField fx:id="ipT" alignment="CENTER_RIGHT" layoutX="250.0" layoutY="161.0" prefHeight="37.0" prefWidth="150.0" style="-fx-background-color: rgba(255,255,255,0.2); -fx-text-fill: #FFF;" text="192.168.178.199" visible="false" />
+      <Label fx:id="ipL" layoutX="161.0" layoutY="169.0" text="IP Adresse" visible="false" />
+      <Label fx:id="hostL" layoutX="161.0" layoutY="169.0" text="IP Adresse" visible="false" />
+      <TextField fx:id="thinkT2" alignment="CENTER_RIGHT" layoutX="312.0" layoutY="264.0" prefHeight="37.0" prefWidth="88.0" style="-fx-background-color: rgba(255,255,255,0.2); -fx-text-fill: #FFF;" text="2000" visible="false" />
+      <Label fx:id="thinkL2" layoutX="196.0" layoutY="272.0" text="Denkzeit (ms)" visible="false" />
+      <TextField fx:id="ipT2" alignment="CENTER_RIGHT" layoutX="250.0" layoutY="264.0" prefHeight="37.0" prefWidth="150.0" style="-fx-background-color: rgba(255,255,255,0.2); -fx-text-fill: #FFF;" text="192.168.178.199" visible="false" />
+      <Label fx:id="ipL2" layoutX="161.0" layoutY="272.0" text="IP Adresse" visible="false" />
+      <Label fx:id="hostL2" layoutX="161.0" layoutY="272.0" text="Server IP:" visible="false" />
+   </children>
+</AnchorPane>
