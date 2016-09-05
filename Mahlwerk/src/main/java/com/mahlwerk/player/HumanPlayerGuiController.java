@@ -55,7 +55,8 @@ public class HumanPlayerGuiController implements Initializable {
 		grid.getStylesheets().clear();
 
 		designChoice.getItems().add("Light Wood");
-		designChoice.getItems().add("Blue Wood");
+		designChoice.getItems().add("Wood");
+		designChoice.getItems().add("Dark Wood");
 		designChoice.getItems().add("Crazy");
 		root.getStylesheets().add(getClass().getResource("/css/board.css").toExternalForm());
 

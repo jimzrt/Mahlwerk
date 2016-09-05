@@ -7,27 +7,37 @@
 }
 
 .lightwood {
-	-fx-background-image: url("../img/muehle11.png");
+	-fx-background-image: url("../img/light.jpg");
+
 }
 .lightwood .line {
-	-fx-stroke: white;
-	-fx-opacity: 0.6;
+	-fx-stroke: rgb(90,46,46);
+	-fx-opacity: 0.9;
 }
 
-.bluewood {
+.wood {
 	-fx-background-image: url("../img/muehle8.png");
 }
-.bluewood .line {
+.wood .line {
 	-fx-stroke: black;
 		-fx-opacity: 0.6;
 
 }
 
-.crazy {
+.darkwood {
 	-fx-background-image: url("../img/maha.jpg");
+}
+.darkwood .line {
+	-fx-stroke: white;
+		-fx-opacity: 0.5;
+
+}
+
+.crazy {
+	-fx-background-image: url("../img/plasma.jpg");
 }
 .crazy .line {
 	-fx-stroke: white;
-		-fx-opacity: 0.5;
+		-fx-opacity: 0.7;
 
 }
