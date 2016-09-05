@@ -33,10 +33,10 @@
 
 }
 
-.crazy {
+.space {
 	-fx-background-image: url("../img/plasma.jpg");
 }
-.crazy .line {
+.space .line {
 	-fx-stroke: white;
 		-fx-opacity: 0.7;
 
