@@ -5,6 +5,8 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Observable;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -22,6 +24,8 @@ import javafx.animation.Interpolator;
 import javafx.animation.TranslateTransition;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXMLLoader;
@@ -478,45 +482,18 @@ public class WatchGui implements IPlayerHandler {
 			for (int col = 0; col < Board.SIZE; col++) {
 				StackPane square = new StackPane();
 
-			
+				Button botton = new Button();
+				botton.getStyleClass().add("boardButton");
+
+				botton.setUserData(new Piece(PieceColor.EMPTY, col, row));
+				botton.setOnMouseClicked(this::handleButtonAction);
+				buttons.add(botton);
+
+				square.getChildren().add(botton);
 				tiles.add(square);
 				grid.add(square, col, row);
 
 			}
-		}
-		Scene scene = new Scene(root);
-		primaryStage.setScene(scene);
-		primaryStage.setResizable(true);
-		primaryStage.sizeToScene();
-		primaryStage.setTitle("Zuschauen");
-		primaryStage.getIcons().add(new Image(
-				getClass().getResourceAsStream("/img/goBlack3.png" )));
-		
-		scene.widthProperty().addListener((e) -> {
-			drawLines();
-		});
-		scene.heightProperty().addListener((e) -> {
-			drawLines();
-		});
-		//  controller.gridParent.minWidthProperty().bind(controller.gridParent.heightProperty());
-		//  controller.gridParent.minHeightProperty().bind(controller.gridParent.widthProperty());
-		primaryStage.show();
-		drawLines();
-
-		int x = 0;
-		int y = 0;
-		for(StackPane square : tiles){
-			Button botton = new Button();
-			botton.getStyleClass().add("boardButton");
-
-			botton.setUserData(new Piece(PieceColor.EMPTY, x, y));
-			botton.setOnMouseClicked(this::handleButtonAction);
-			buttons.add(botton);
-
-			square.getChildren().add(botton);
-			x = (x +1) % Board.SIZE; 
-			if(x == 0)
-				y=(y+1) % Board.SIZE;
 		}
 
 		controller.topLabel.textProperty().bind(topLabel);
@@ -525,15 +502,90 @@ public class WatchGui implements IPlayerHandler {
 
 		pool.submit(dynamicTimeTask);
 
-		controller.revertButton.setDisable(true);
+		controller.revertButton.setOnAction((event) -> {
+			game.onMoveRevert();
+		});
+
+		Scene scene = new Scene(root);
+		primaryStage.setScene(scene);
+		primaryStage.setResizable(true);
+		primaryStage.setMinWidth(600);
+		primaryStage.setMinHeight(500);
+		primaryStage.setTitle("Zuschauen");
+		primaryStage.getIcons().add(new Image(
+				getClass().getResourceAsStream("/img/goBlack3.png")));
+
+		// create a listener
+		final ChangeListener<Number> listener = new ChangeListener<Number>() {
+			final Timer timer = new Timer(); // uses a timer to call your resize
+												// method
+			TimerTask task = null; // task to execute after defined delay
+			final long delayTime = 150; // delay that has to pass in order to
+										// consider an operation done
+
+			@Override
+			public void changed(ObservableValue<? extends Number> observable, Number oldValue, final Number newValue) {
+
+				if (controller.gridParent.getChildren().get(0) instanceof Line) {
+					controller.gridParent.getChildren().remove(0, 7);
+				}
+				
+				Insets inset = null;
+				double DEF_PAD = 6.0;
+				double w = primaryStage.getWidth();
+				double h = primaryStage.getHeight();
+				double extra = DEF_PAD + 0.5 * Math.abs(w - h);
+				if (w > h) {
+					inset = new Insets(DEF_PAD, extra, DEF_PAD, extra);
+				} else if (h > w) {
+					inset = new Insets(extra, DEF_PAD, extra, DEF_PAD);
+				} else {
+					inset = new Insets(DEF_PAD);
+				}
+
+				grid.paddingProperty().set(inset);
+				
+				if (task != null) { // there was already a task scheduled from
+									// the previous operation ...
+					task.cancel(); // cancel it, we have a new size to consider
+				}
+
+				task = new TimerTask() // create new task that calls your resize
+										// operation
+				{
+					@Override
+					public void run() {
 
 
+						// here you can place your resize code
+						//System.out.println("resize to " + primaryStage.getWidth() + " " + primaryStage.getHeight());
+						Platform.runLater(() -> {
 
+							
+							
+							drawLines();
+
+						});
+
+					}
+				};
+				// schedule new task
+				timer.schedule(task, delayTime);
+			}
+		};
+
+		// finally we have to register the listener
+		primaryStage.widthProperty().addListener(listener);
+		primaryStage.heightProperty().addListener(listener);
+
+		primaryStage.show();
 		rect = new Rectangle(controller.topBar.getWidth(), controller.topBar.getHeight());
 		rect.setFill(Color.rgb(55, 55, 55));
+		rect.heightProperty().bind(controller.topBar.heightProperty());
 
 		rect2 = new Rectangle(controller.bottomBar.getWidth(), controller.bottomBar.getHeight());
 		rect2.setFill(Color.rgb(55, 55, 55));
+		rect2.heightProperty().bind(controller.bottomBar.heightProperty());
 
 		controller.topBar.getChildren().add(rect);
 		controller.bottomBar.getChildren().add(rect2);
@@ -559,49 +611,46 @@ public class WatchGui implements IPlayerHandler {
 			stoneListBlack.add(testbutton);
 		}
 
+
 	}
 
-	
-	public void drawLines(){
-		
-		System.out.println("Drawwwing");
-		if(controller.gridParent.getChildren().get(0) instanceof Line){
-			controller.gridParent.getChildren().remove(0, 7);
-		}
+	public void drawLines() {
+
 
 
 		Bounds bounds = tiles.get(0).getBoundsInLocal();
-		Bounds screenBounds = tiles.get(0).localToScreen(bounds);
-		int width = (int) screenBounds.getWidth();
-		int height = (int) screenBounds.getHeight();
-		
+		int width = (int) bounds.getWidth();
+		int height = (int) bounds.getHeight();
 
 		Rectangle rect = new Rectangle();
 		rect.setMouseTransparent(true);
 		rect.setStrokeWidth(5);
 		rect.setFill(Color.TRANSPARENT);
-		//rect.setStroke(Color.rgb(90, 46,46));
-		//root.getStylesheets().add(getClass().getResource("/css/board.css").toExternalForm());
+
 		rect.getStyleClass().add("line");
 
-		rect.setX(controller.gridParent.screenToLocal(tiles.get(0).localToScreen(width/2,height/2)).getX());
-		rect.setY(controller.gridParent.screenToLocal(tiles.get(0).localToScreen(width/2,height/2)).getY());
-		rect.setWidth((tiles.get(6).localToScreen(width/2,height/2).subtract(tiles.get(0).localToScreen(width/2,height/2))).getX());
-		rect.setHeight((tiles.get(48).localToScreen(width/2,height/2).subtract(tiles.get(0).localToScreen(width/2,height/2))).getY());
+		rect.setX(controller.gridParent.screenToLocal(tiles.get(0).localToScreen(width / 2, height / 2)).getX());
+		rect.setY(controller.gridParent.screenToLocal(tiles.get(0).localToScreen(width / 2, height / 2)).getY());
+		rect.setWidth((tiles.get(6).localToScreen(width / 2, height / 2)
+				.subtract(tiles.get(0).localToScreen(width / 2, height / 2))).getX());
+		rect.setHeight((tiles.get(48).localToScreen(width / 2, height / 2)
+				.subtract(tiles.get(0).localToScreen(width / 2, height / 2))).getY());
 		rect.toBack();
 		controller.gridParent.getChildren().add(rect);
 		rect.toBack();
-		
+
 		Rectangle rect2 = new Rectangle();
 		rect2.setMouseTransparent(true);
 		rect2.setStrokeWidth(5);
 		rect2.setFill(Color.TRANSPARENT);
-		//rect2.setStroke(Color.rgb(90, 46,46));
+		// rect2.setStroke(Color.rgb(90, 46,46));
 		rect2.getStyleClass().add("line");
-		rect2.setX(controller.gridParent.screenToLocal(tiles.get(8).localToScreen(width/2,height/2)).getX());
-		rect2.setY(controller.gridParent.screenToLocal(tiles.get(8).localToScreen(width/2,height/2)).getY());
-		rect2.setWidth((tiles.get(12).localToScreen(width/2,height/2).subtract(tiles.get(8).localToScreen(width/2,height/2))).getX());
-		rect2.setHeight((tiles.get(36).localToScreen(width/2,height/2).subtract(tiles.get(8).localToScreen(width/2,height/2))).getY());
+		rect2.setX(controller.gridParent.screenToLocal(tiles.get(8).localToScreen(width / 2, height / 2)).getX());
+		rect2.setY(controller.gridParent.screenToLocal(tiles.get(8).localToScreen(width / 2, height / 2)).getY());
+		rect2.setWidth((tiles.get(12).localToScreen(width / 2, height / 2)
+				.subtract(tiles.get(8).localToScreen(width / 2, height / 2))).getX());
+		rect2.setHeight((tiles.get(36).localToScreen(width / 2, height / 2)
+				.subtract(tiles.get(8).localToScreen(width / 2, height / 2))).getY());
 		controller.gridParent.getChildren().add(rect2);
 		rect2.toBack();
 
@@ -609,64 +658,62 @@ public class WatchGui implements IPlayerHandler {
 		rect3.setMouseTransparent(true);
 		rect3.setStrokeWidth(5);
 		rect3.setFill(Color.TRANSPARENT);
-		//rect3.setStroke(Color.rgb(90, 46,46));
+		// rect3.setStroke(Color.rgb(90, 46,46));
 		rect3.getStyleClass().add("line");
-		rect3.setX(controller.gridParent.screenToLocal(tiles.get(16).localToScreen(width/2,height/2)).getX());
-		rect3.setY(controller.gridParent.screenToLocal(tiles.get(16).localToScreen(width/2,height/2)).getY());
-		rect3.setWidth((tiles.get(18).localToScreen(width/2,height/2).subtract(tiles.get(16).localToScreen(width/2,height/2))).getX());
-		rect3.setHeight((tiles.get(30).localToScreen(width/2,height/2).subtract(tiles.get(16).localToScreen(width/2,height/2))).getY());
+		rect3.setX(controller.gridParent.screenToLocal(tiles.get(16).localToScreen(width / 2, height / 2)).getX());
+		rect3.setY(controller.gridParent.screenToLocal(tiles.get(16).localToScreen(width / 2, height / 2)).getY());
+		rect3.setWidth((tiles.get(18).localToScreen(width / 2, height / 2)
+				.subtract(tiles.get(16).localToScreen(width / 2, height / 2))).getX());
+		rect3.setHeight((tiles.get(30).localToScreen(width / 2, height / 2)
+				.subtract(tiles.get(16).localToScreen(width / 2, height / 2))).getY());
 		controller.gridParent.getChildren().add(rect3);
 		rect3.toBack();
 
 		Line line = new Line();
 		line.setStrokeWidth(2);
-		//line.setStroke(Color.rgb(90, 46,46));
+		// line.setStroke(Color.rgb(90, 46,46));
 		line.getStyleClass().add("line");
-		line.setStartX(controller.gridParent.screenToLocal(tiles.get(3).localToScreen(width/2,height/2)).getX());
-		line.setStartY(controller.gridParent.screenToLocal(tiles.get(3).localToScreen(width/2,height/2)).getY());
-		line.setEndX(controller.gridParent.screenToLocal(tiles.get(17).localToScreen(width/2,height/2)).getX());
-		line.setEndY(controller.gridParent.screenToLocal(tiles.get(17).localToScreen(width/2,height/2)).getY());
+		line.setStartX(controller.gridParent.screenToLocal(tiles.get(3).localToScreen(width / 2, height / 2)).getX());
+		line.setStartY(controller.gridParent.screenToLocal(tiles.get(3).localToScreen(width / 2, height / 2)).getY());
+		line.setEndX(controller.gridParent.screenToLocal(tiles.get(17).localToScreen(width / 2, height / 2)).getX());
+		line.setEndY(controller.gridParent.screenToLocal(tiles.get(17).localToScreen(width / 2, height / 2)).getY());
 		controller.gridParent.getChildren().add(line);
 		line.toBack();
 
 		Line line2 = new Line();
 		line2.setStrokeWidth(2);
-		//line2.setStroke(Color.rgb(90, 46,46));
+		// line2.setStroke(Color.rgb(90, 46,46));
 		line2.getStyleClass().add("line");
-		line2.setStartX(controller.gridParent.screenToLocal(tiles.get(21).localToScreen(width/2,height/2)).getX());
-		line2.setStartY(controller.gridParent.screenToLocal(tiles.get(21).localToScreen(width/2,height/2)).getY());
-		line2.setEndX(controller.gridParent.screenToLocal(tiles.get(23).localToScreen(width/2,height/2)).getX());
-		line2.setEndY(controller.gridParent.screenToLocal(tiles.get(23).localToScreen(width/2,height/2)).getY());
+		line2.setStartX(controller.gridParent.screenToLocal(tiles.get(21).localToScreen(width / 2, height / 2)).getX());
+		line2.setStartY(controller.gridParent.screenToLocal(tiles.get(21).localToScreen(width / 2, height / 2)).getY());
+		line2.setEndX(controller.gridParent.screenToLocal(tiles.get(23).localToScreen(width / 2, height / 2)).getX());
+		line2.setEndY(controller.gridParent.screenToLocal(tiles.get(23).localToScreen(width / 2, height / 2)).getY());
 		controller.gridParent.getChildren().add(line2);
 		line2.toBack();
-		
+
 		Line line3 = new Line();
 		line3.setStrokeWidth(2);
-		//line3.setStroke(Color.rgb(90, 46,46));
+		// line3.setStroke(Color.rgb(90, 46,46));
 		line3.getStyleClass().add("line");
-		line3.setStartX(controller.gridParent.screenToLocal(tiles.get(25).localToScreen(width/2,height/2)).getX());
-		line3.setStartY(controller.gridParent.screenToLocal(tiles.get(25).localToScreen(width/2,height/2)).getY());
-		line3.setEndX(controller.gridParent.screenToLocal(tiles.get(27).localToScreen(width/2,height/2)).getX());
-		line3.setEndY(controller.gridParent.screenToLocal(tiles.get(27).localToScreen(width/2,height/2)).getY());
+		line3.setStartX(controller.gridParent.screenToLocal(tiles.get(25).localToScreen(width / 2, height / 2)).getX());
+		line3.setStartY(controller.gridParent.screenToLocal(tiles.get(25).localToScreen(width / 2, height / 2)).getY());
+		line3.setEndX(controller.gridParent.screenToLocal(tiles.get(27).localToScreen(width / 2, height / 2)).getX());
+		line3.setEndY(controller.gridParent.screenToLocal(tiles.get(27).localToScreen(width / 2, height / 2)).getY());
 		controller.gridParent.getChildren().add(line3);
 		line3.toBack();
 
-		
 		Line line4 = new Line();
 		line4.setStrokeWidth(2);
-		//line4.setStroke(Color.rgb(90, 46,46));
+		// line4.setStroke(Color.rgb(90, 46,46));
 		line4.getStyleClass().add("line");
-		line4.setStartX(controller.gridParent.screenToLocal(tiles.get(31).localToScreen(width/2,height/2)).getX());
-		line4.setStartY(controller.gridParent.screenToLocal(tiles.get(31).localToScreen(width/2,height/2)).getY());
-		line4.setEndX(controller.gridParent.screenToLocal(tiles.get(45).localToScreen(width/2,height/2)).getX());
-		line4.setEndY(controller.gridParent.screenToLocal(tiles.get(45).localToScreen(width/2,height/2)).getY());
+		line4.setStartX(controller.gridParent.screenToLocal(tiles.get(31).localToScreen(width / 2, height / 2)).getX());
+		line4.setStartY(controller.gridParent.screenToLocal(tiles.get(31).localToScreen(width / 2, height / 2)).getY());
+		line4.setEndX(controller.gridParent.screenToLocal(tiles.get(45).localToScreen(width / 2, height / 2)).getX());
+		line4.setEndY(controller.gridParent.screenToLocal(tiles.get(45).localToScreen(width / 2, height / 2)).getY());
 		controller.gridParent.getChildren().add(line4);
 		line4.toBack();
 
-	
-		
 	}
-
 	@Override
 	public void update(Observable o, Object arg) {
 		if (arg instanceof Move) {

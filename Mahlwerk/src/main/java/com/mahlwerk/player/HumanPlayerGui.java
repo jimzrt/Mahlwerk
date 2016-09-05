@@ -494,8 +494,7 @@ public class HumanPlayerGui implements IPlayerHandler {
 		Scene scene = new Scene(root);
 		primaryStage.setScene(scene);
 		primaryStage.setResizable(true);
-		primaryStage.sizeToScene();
-		primaryStage.setMinWidth(500);
+		primaryStage.setMinWidth(600);
 		primaryStage.setMinHeight(500);
 		primaryStage.setTitle(color == PieceColor.BLACK ? "Schwarz" : "Weiﬂ");
 		primaryStage.getIcons().add(new Image(
@@ -506,12 +505,16 @@ public class HumanPlayerGui implements IPlayerHandler {
 			final Timer timer = new Timer(); // uses a timer to call your resize
 												// method
 			TimerTask task = null; // task to execute after defined delay
-			final long delayTime = 50; // delay that has to pass in order to
+			final long delayTime = 150; // delay that has to pass in order to
 										// consider an operation done
 
 			@Override
 			public void changed(ObservableValue<? extends Number> observable, Number oldValue, final Number newValue) {
 
+				if (controller.gridParent.getChildren().get(0) instanceof Line) {
+					controller.gridParent.getChildren().remove(0, 7);
+				}
+				
 				Insets inset = null;
 				double DEF_PAD = 6.0;
 				double w = primaryStage.getWidth();
@@ -526,7 +529,7 @@ public class HumanPlayerGui implements IPlayerHandler {
 				}
 
 				grid.paddingProperty().set(inset);
-
+				
 				if (task != null) { // there was already a task scheduled from
 									// the previous operation ...
 					task.cancel(); // cancel it, we have a new size to consider
@@ -537,9 +540,14 @@ public class HumanPlayerGui implements IPlayerHandler {
 				{
 					@Override
 					public void run() {
+
+
 						// here you can place your resize code
-						System.out.println("resize to " + primaryStage.getWidth() + " " + primaryStage.getHeight());
+						//System.out.println("resize to " + primaryStage.getWidth() + " " + primaryStage.getHeight());
 						Platform.runLater(() -> {
+
+							
+							
 							drawLines();
 
 						});
@@ -588,18 +596,14 @@ public class HumanPlayerGui implements IPlayerHandler {
 			stoneListBlack.add(testbutton);
 		}
 
-		drawLines();
 
 	}
 
 	public void drawLines() {
 
-		if (controller.gridParent.getChildren().get(0) instanceof Line) {
-			controller.gridParent.getChildren().remove(0, 7);
-		}
+
 
 		Bounds bounds = tiles.get(0).getBoundsInLocal();
-		// Bounds screenBounds = tiles.get(0).localToScreen(bounds);
 		int width = (int) bounds.getWidth();
 		int height = (int) bounds.getHeight();
 
@@ -607,8 +611,7 @@ public class HumanPlayerGui implements IPlayerHandler {
 		rect.setMouseTransparent(true);
 		rect.setStrokeWidth(5);
 		rect.setFill(Color.TRANSPARENT);
-		// rect.setStroke(Color.rgb(90, 46,46));
-		// root.getStylesheets().add(getClass().getResource("/css/board.css").toExternalForm());
+
 		rect.getStyleClass().add("line");
 
 		rect.setX(controller.gridParent.screenToLocal(tiles.get(0).localToScreen(width / 2, height / 2)).getX());

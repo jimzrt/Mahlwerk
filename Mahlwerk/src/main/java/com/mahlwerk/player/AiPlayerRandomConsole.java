@@ -58,7 +58,6 @@ public class AiPlayerRandomConsole implements IPlayerHandler {
 
 		if (game.gameState == turnState) {
 			if (game.gamePhase == Gamephase.SetStones) {
-
 				List<Piece> emptyPieces = game.board.getEmpty();
 				Piece newPiece = new Piece(
 						emptyPieces.get((int) Math.round((Math.random() * (emptyPieces.size() - 1)))));
@@ -128,10 +127,12 @@ public class AiPlayerRandomConsole implements IPlayerHandler {
 	@Override
 	public synchronized void update(Observable o, Object arg) {
 
-		if (arg instanceof Move) {
 
-			if (!pool.isShutdown())
+
+			if (!pool.isShutdown()){
 				pool.submit(r);
+
+			
 
 		}
 

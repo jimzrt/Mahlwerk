@@ -9,7 +9,7 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.RowConstraints?>
 
-<AnchorPane fx:id="root" minHeight="300.0" minWidth="300.0" style="-fx-border-width: 0 0;" stylesheets="@../css/DarkTheme.css" xmlns="http://javafx.com/javafx/8.0.60" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.mahlwerk.player.HumanPlayerGuiController">
+<AnchorPane fx:id="root" prefHeight="640.0" prefWidth="600.0" style="-fx-border-width: 0 0;" stylesheets="@../css/DarkTheme.css" xmlns="http://javafx.com/javafx/8.0.60" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.mahlwerk.player.HumanPlayerGuiController">
    <children>
       <BorderPane AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
          <top>
@@ -22,7 +22,7 @@
             </AnchorPane>
          </top>
          <center>
-          <AnchorPane id="grid" fx:id="gridParent" minHeight="300.0" minWidth="300.0" prefHeight="500.0" prefWidth="500.0" BorderPane.alignment="CENTER">
+          <AnchorPane id="grid" fx:id="gridParent" BorderPane.alignment="CENTER">
                <children>
                   <GridPane fx:id="grid" layoutX="80.0" layoutY="73.0" stylesheets="@../css/LightWood.css" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                     <columnConstraints>
