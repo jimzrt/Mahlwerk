@@ -9,7 +9,7 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.RowConstraints?>
 
-<AnchorPane fx:id="root" prefHeight="640.0" prefWidth="600.0" style="-fx-border-width: 0 0;" stylesheets="@../css/DarkTheme.css" xmlns="http://javafx.com/javafx/8.0.60" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.mahlwerk.player.HumanPlayerGuiController">
+<AnchorPane fx:id="root" prefHeight="740.0" prefWidth="700.0" style="-fx-border-width: 0 0;" stylesheets="@../css/DarkTheme.css" xmlns="http://javafx.com/javafx/8.0.60" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.mahlwerk.player.HumanPlayerGuiController">
    <children>
       <BorderPane AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
          <top>

@@ -494,8 +494,8 @@ public class HumanPlayerGui implements IPlayerHandler {
 		Scene scene = new Scene(root);
 		primaryStage.setScene(scene);
 		primaryStage.setResizable(true);
-		primaryStage.setMinWidth(600);
-		primaryStage.setMinHeight(500);
+		primaryStage.setMinWidth(650);
+		primaryStage.setMinHeight(550);
 		primaryStage.setTitle(color == PieceColor.BLACK ? "Schwarz" : "Weiﬂ");
 		primaryStage.getIcons().add(new Image(
 				getClass().getResourceAsStream(color == PieceColor.BLACK ? "/img/goBlack3.png" : "/img/goWhite3.png")));
