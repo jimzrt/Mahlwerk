@@ -3,15 +3,31 @@ apply plugin: 'eclipse'
 apply plugin: 'application'
 
 
+/*
+buildscript {
+    repositories {
+        jcenter()
+    }
 
+    dependencies {
+        classpath 'org.javafxports:jfxmobile-plugin:1.0.8'
+    }
+}
 
+apply plugin: 'org.javafxports.jfxmobile'
+
+repositories {
+    jcenter()
+}
+
+*/
 
 
 mainClassName = 'com.mahlwerk.main.Main'
 
 // Running 'gradle wrapper' will generate gradlew - Getting gradle wrapper working and using it will save you a lot of pain.
 task wrapper(type: Wrapper) {
-    gradleVersion = '2.2' 
+    gradleVersion = '3.0' 
 }
 
 jar {

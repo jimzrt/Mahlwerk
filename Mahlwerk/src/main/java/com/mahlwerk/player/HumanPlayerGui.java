@@ -516,9 +516,9 @@ public class HumanPlayerGui implements IPlayerHandler {
 				}
 				
 				Insets inset = null;
-				double DEF_PAD = 6.0;
-				double w = primaryStage.getWidth();
-				double h = primaryStage.getHeight();
+				double DEF_PAD = 0.0;
+				double w = primaryStage.getWidth() - 100;
+				double h = primaryStage.getHeight() - 140;
 				double extra = DEF_PAD + 0.5 * Math.abs(w - h);
 				if (w > h) {
 					inset = new Insets(DEF_PAD, extra, DEF_PAD, extra);
