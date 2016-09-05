@@ -3,7 +3,12 @@ package com.mahlwerk.base;
 import java.util.ArrayList;
 import java.util.List;
 
-public class History {
+/**
+ * History of Moves
+ * @author James Tophoven
+ *
+ */
+public class MoveHistory {
 	
 	List<Move> moves = new ArrayList<Move>();
 
@@ -14,7 +19,6 @@ public class History {
 			moves.add(move);
 
 		}
-		// TODO Auto-generated method stub
 		
 	}
 	
@@ -24,7 +28,7 @@ public class History {
 		return moves.get(moves.size()-1);
 	}
 	
-	public synchronized void removeLasMove(){
+	public synchronized void removeLastMove(){
 		if(!moves.isEmpty())
 			moves.remove(moves.size()-1);
 	}

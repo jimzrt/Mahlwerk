@@ -1,0 +1,33 @@
+#griyd {
+
+-fx-background-repeat: stretch;   
+-fx-background-position: center center;
+-fx-background-size: 500px 500px; 
+
+}
+
+.lightwood {
+	-fx-background-image: url("../img/muehle11.png");
+}
+.lightwood .line {
+	-fx-stroke: white;
+	-fx-opacity: 0.6;
+}
+
+.bluewood {
+	-fx-background-image: url("../img/muehle8.png");
+}
+.bluewood .line {
+	-fx-stroke: black;
+		-fx-opacity: 0.6;
+
+}
+
+.crazy {
+	-fx-background-image: url("../img/maha.jpg");
+}
+.crazy .line {
+	-fx-stroke: white;
+		-fx-opacity: 0.5;
+
+}

@@ -4,21 +4,33 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.IntStream;
 
 import com.mahlwerk.base.Piece.PieceColor;
 
+/**
+ * Representation of Game Board with utility functions
+ * 
+ * (hashId-Generation commented out for future transposition table support)
+ * 
+ * @author James Tophoven
+ *
+ */
 public class Board {
-	public static final int SIZE = 7;
-	int[][] adjacencyMap = new int[SIZE * SIZE][];
-	public int blackStonesRemoved = 0;
 
+	public static final int SIZE = 7;
+
+	private int[][] adjacencyMap = new int[SIZE * SIZE][];
+
+	private int blackStonesRemoved = 0;
 	public int blackStonesSet = 0;
 
-	public long hashId;
-	History history = new History();
+	private int whiteStonesRemoved = 0;
+	public int whiteStonesSet = 0;
 
-	public boolean lastMoveMill = false;
+	// public long hashId;
+	private MoveHistory history = new MoveHistory();
+
+	// private boolean lastMoveMill = false;
 	int[][][] millMap = new int[SIZE * SIZE][][];
 	public int moveCounter = 0;
 	private int[] pieces = new int[SIZE * SIZE];
@@ -26,28 +38,21 @@ public class Board {
 	public int playerBlackMillCount = 0;
 
 	public int playerWhiteMillCount = 0;
-	public boolean[] validPositions = new boolean[] { 
-			true, false, false, true, false, false, true, 
-			false, true, false, true, false, true, false,
-			false, false, true, true, true, false, false, 
-			true, true, true, false, true, true, true, 
-			false, false, true, true, true, false, false,
-			false, true, false, true, false, true, false, 
-			true, false, false, true, false, false, true
+
+	public boolean[] validPositions = new boolean[] { true, false, false, true, false, false, true, false, true, false,
+			true, false, true, false, false, false, true, true, true, false, false, true, true, true, false, true, true,
+			true, false, false, true, true, true, false, false, false, true, false, true, false, true, false, true,
+			false, false, true, false, false, true
 
 	};
 
-	public int whiteStonesRemoved = 0;
-
-	public int whiteStonesSet = 0;
-
-	//long[][] zobrist = new long[SIZE * SIZE][3];
+	// long[][] zobrist = new long[SIZE * SIZE][3];
 
 	public Board() {
 
-//		for (int square = 0; square < zobrist.length; square++)
-//			for (int side = 0; side < zobrist[square].length; side++)
-//				zobrist[square][side] = (long) (Math.random() * Long.MAX_VALUE);
+		// for (int square = 0; square < zobrist.length; square++)
+		// for (int side = 0; side < zobrist[square].length; side++)
+		// zobrist[square][side] = (long) (Math.random() * Long.MAX_VALUE);
 
 		for (int i = 0; i < SIZE; i++) {
 			for (int j = 0; j < SIZE; j++) {
@@ -60,10 +65,9 @@ public class Board {
 		}
 
 		buildAdjacencyMap();
-
 		buildMillMap();
 
-	//	hashId = computeKey();
+		// hashId = computeKey();
 
 	}
 
@@ -202,17 +206,17 @@ public class Board {
 		return -1;
 	}
 
-//	long computeKey() {
-//		long hashKey = 0;
-//		for (int square = 0; square < pieces.length; square++) {
-//			if (validPositions[square]) {
-//				int side = pieces[square];
-//			//	hashKey ^= zobrist[square][side];
-//			}
-//
-//		}
-//		return hashKey;
-//	}
+	// long computeKey() {
+	// long hashKey = 0;
+	// for (int square = 0; square < pieces.length; square++) {
+	// if (validPositions[square]) {
+	// int side = pieces[square];
+	// // hashKey ^= zobrist[square][side];
+	// }
+	//
+	// }
+	// return hashKey;
+	// }
 
 	public synchronized void decrementMillCount(PieceColor color) {
 		switch (color) {
@@ -227,43 +231,6 @@ public class Board {
 		default:
 			break;
 		}
-	}
-
-	public synchronized int doubleMillCount(PieceColor color) {
-		int millCount = 0;
-		if (color == PieceColor.BLACK)
-			millCount = playerBlackMillCount;
-		else if (color == PieceColor.WHITE)
-			millCount = playerWhiteMillCount;
-
-		if (millCount == 0)
-			return 0;
-		int count = 0;
-
-		Set<Integer> millPieces = new HashSet<Integer>();
-
-		List<Piece> piecesColor = getPiecesByColor(color);
-		for (Piece newPiece : piecesColor) {
-
-			if (checkMill(newPiece)) {
-				int[][] indexes = millMap[newPiece.x + newPiece.y * SIZE];
-
-				for (int[] i : indexes) {
-
-					if (getPieceColor(i[0]) == newPiece.color && getPieceColor(i[1]) == newPiece.color) {
-						millPieces.add(i[0]);
-						millPieces.add(i[1]);
-						millPieces.add(newPiece.x + newPiece.y * SIZE);
-						count++;
-					}
-
-				}
-
-			}
-
-		}
-		return count - millPieces.size();
-
 	}
 
 	public synchronized boolean endReached() {
@@ -306,7 +273,6 @@ public class Board {
 
 	}
 
-
 	public synchronized int getBlockedCount(PieceColor color) {
 		int count = 0;
 		List<Piece> piecesByColor = getPiecesByColor(color);
@@ -317,13 +283,49 @@ public class Board {
 		return count;
 	}
 
-	public synchronized List<Piece> getEmpty() {
+	public synchronized int getDoubleMillCount(PieceColor color) {
+		int millCount = 0;
+		if (color == PieceColor.BLACK)
+			millCount = playerBlackMillCount;
+		else if (color == PieceColor.WHITE)
+			millCount = playerWhiteMillCount;
 
+		if (millCount == 0)
+			return 0;
+		int count = 0;
+
+		Set<Integer> millPieces = new HashSet<Integer>();
+
+		List<Piece> piecesColor = getPiecesByColor(color);
+		for (Piece newPiece : piecesColor) {
+
+			if (checkMill(newPiece)) {
+				int[][] indexes = millMap[newPiece.x + newPiece.y * SIZE];
+
+				for (int[] i : indexes) {
+
+					if (getPieceColor(i[0]) == newPiece.color && getPieceColor(i[1]) == newPiece.color) {
+						millPieces.add(i[0]);
+						millPieces.add(i[1]);
+						millPieces.add(newPiece.x + newPiece.y * SIZE);
+						count++;
+					}
+
+				}
+
+			}
+
+		}
+		return count - millPieces.size();
+
+	}
+
+	public synchronized List<Piece> getEmpty() {
 
 		List<Piece> emptyPieces = new ArrayList<Piece>();
 		int index = 0;
 		for (int i : pieces) {
-			if(i == 0)
+			if (i == 0)
 				emptyPieces.add(new Piece(PieceColor.EMPTY, index));
 			index++;
 		}
@@ -366,12 +368,12 @@ public class Board {
 
 	public synchronized List<Piece> getPiecesByColor(PieceColor color) {
 
-		//int[] index = getArrayIndex(pieces, colorToValue(color));
+		// int[] index = getArrayIndex(pieces, colorToValue(color));
 		int colorV = colorToValue(color);
 		List<Piece> piecesByColor = new ArrayList<Piece>();
 		int index = 0;
 		for (int i : pieces) {
-			if(i == colorV)
+			if (i == colorV)
 				piecesByColor.add(new Piece(color, index));
 			index++;
 		}
@@ -384,10 +386,10 @@ public class Board {
 		int colorV = colorToValue(color);
 		int index = 0;
 		for (int i : pieces) {
-			if(i == colorV)
+			if (i == colorV)
 				index++;
 		}
-		
+
 		return index;
 	}
 
@@ -443,10 +445,8 @@ public class Board {
 	}
 
 	public synchronized void makeMove(Move move) {
-		// System.out.println(move);
-		history.add(move);
 
-		lastMoveMill = false;
+		history.add(move);
 
 		if (move.moveFrom == null && move.moveTo != null) {
 			if (move.moveTo.color == PieceColor.BLACK)
@@ -473,7 +473,6 @@ public class Board {
 			// updateKey(move.moveTo.x, move.moveTo.y, move.moveTo.color);
 
 			if (checkMill(move.moveTo)) {
-				lastMoveMill = true;
 				if (move.moveTo.color == PieceColor.BLACK)
 					playerBlackMillCount++;
 				else if (move.moveTo.color == PieceColor.WHITE)
@@ -656,17 +655,17 @@ public class Board {
 		return millPieces.size();
 	}
 
-//	void updateKey(int index, int color) {
-//		hashId = hashId ^ zobrist[index][color];
-//	}
-//
-//	void updateKey(int x, int y, PieceColor color) {
-//		hashId = hashId ^ zobrist[x + y * SIZE][colorToValue(color)];
-//	}
-//
-//	void updateKey(int index, PieceColor color) {
-//		hashId = hashId ^ zobrist[index][colorToValue(color)];
-//	}
+	// void updateKey(int index, int color) {
+	// hashId = hashId ^ zobrist[index][color];
+	// }
+	//
+	// void updateKey(int x, int y, PieceColor color) {
+	// hashId = hashId ^ zobrist[x + y * SIZE][colorToValue(color)];
+	// }
+	//
+	// void updateKey(int index, PieceColor color) {
+	// hashId = hashId ^ zobrist[index][colorToValue(color)];
+	// }
 
 	public synchronized int zwickMillCount(PieceColor color) {
 		int count = 0;

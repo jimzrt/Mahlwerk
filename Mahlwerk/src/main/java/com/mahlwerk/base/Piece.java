@@ -2,6 +2,11 @@ package com.mahlwerk.base;
 
 import java.io.Serializable;
 
+/**
+ * Container for Game Pieces, consits of Color and Coordinates
+ * @author James Tophoven
+ *
+ */
 public class Piece implements Serializable{
 
 	/**
@@ -40,6 +45,7 @@ public class Piece implements Serializable{
 	}
 	
 
+	@Override
 	public String toString(){
 		return "Move - Color: " + this.color + " - Position: (" + x + ", " + y + ")";
 	}

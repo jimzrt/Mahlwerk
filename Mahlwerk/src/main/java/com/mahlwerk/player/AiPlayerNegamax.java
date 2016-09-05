@@ -10,6 +10,11 @@ import com.mahlwerk.base.Game.Gamestate;
 import com.mahlwerk.base.Move;
 import com.mahlwerk.base.Piece.PieceColor;
 
+/**
+ * Player that delegates to AlphaBetaPruning - Class
+ * @author james
+ *
+ */
 public class AiPlayerNegamax implements IPlayerHandler {
 
 	private PieceColor color;
@@ -20,6 +25,7 @@ public class AiPlayerNegamax implements IPlayerHandler {
 	ExecutorService pool = Executors.newSingleThreadExecutor();
 
 	private Runnable MoveWorker = new Runnable() {
+		@Override
 		public void run() {
 			try {
 				Thread.sleep(100);
@@ -42,20 +48,9 @@ public class AiPlayerNegamax implements IPlayerHandler {
 	}
 
 	@Override
-	public void continueTimer() {
-
-	}
-
-	@Override
 	public PieceColor getColor() {
 
 		return color;
-	}
-
-	@Override
-	public void makeMove(Move move) {
-		solver.makeMove(move);
-
 	}
 
 	private synchronized void makeValidMove() {
@@ -108,16 +103,6 @@ public class AiPlayerNegamax implements IPlayerHandler {
 	}
 
 	@Override
-	public void startPlayer() {
-
-	}
-
-	@Override
-	public void stopTimer() {
-
-	}
-
-	@Override
 	public void update(Observable o, Object arg) {
 
 		if (arg instanceof Move) {
@@ -126,10 +111,20 @@ public class AiPlayerNegamax implements IPlayerHandler {
 			solver.makeMove((Move) arg);
 			solver.terminate = false;
 			return;
+		} else if (arg instanceof String) {
+			String command = (String) arg;
+			if (command.equals("revert")) {
+				solver.revertMove(game.board.getLastMove());
+			}
 		}
 
 		if (!pool.isShutdown())
 			pool.submit(MoveWorker);
+
+	}
+
+	@Override
+	public void revertLastMove() {
 
 	}
 

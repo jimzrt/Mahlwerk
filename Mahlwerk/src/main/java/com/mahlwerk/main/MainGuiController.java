@@ -5,13 +5,7 @@ import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.ResourceBundle;
 
-import javax.management.Notification;
-
 import javafx.beans.property.ReadOnlyIntegerProperty;
-import javafx.beans.property.SimpleIntegerProperty;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.value.ObservableValue;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
@@ -20,57 +14,53 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Tooltip;
 
-public class MainGuiController  implements Initializable{
-	
+public class MainGuiController implements Initializable {
+
 	@FXML
 	public Button startButton;
-	
+
 	@FXML
 	public Label thinkL;
-	
+
 	@FXML
 	public TextField thinkT;
-	
+
 	@FXML
 	public Label thinkL2;
-	
+
 	@FXML
 	public TextField thinkT2;
-	
+
 	@FXML
 	public Label ipL;
-	
+
 	@FXML
 	public TextField ipT;
-	
+
 	@FXML
 	public Label ipL2;
-	
+
 	@FXML
 	public TextField ipT2;
-	
+
 	@FXML
 	public Label hostL;
-	
+
 	@FXML
 	public Label hostL2;
-	
+
 	@FXML
 	public ChoiceBox<String> playerBlack;
-	
+
 	@FXML
 	public ChoiceBox<String> playerWhite;
 
 	@Override
 	public void initialize(URL arg0, ResourceBundle arg1) {
 		final Tooltip tooltip = new Tooltip();
-		tooltip.setText(
-		    "Your password must be\n" +
-		    "at least 8 characters in length\n"  
-		);
-		
-		startButton.setTooltip(tooltip);
+		tooltip.setText("Your password must be\n" + "at least 8 characters in length\n");
 
+		startButton.setTooltip(tooltip);
 
 		playerBlack.getItems().add("Mensch - Gui");
 		playerBlack.getItems().add("AI - Negamax");
@@ -78,14 +68,12 @@ public class MainGuiController  implements Initializable{
 		playerBlack.getItems().add("TCP - Server");
 		playerBlack.getItems().add("TCP - Client");
 
-
-		
 		playerWhite.getItems().add("Mensch - Gui");
 		playerWhite.getItems().add("AI - Negamax");
 		playerWhite.getItems().add("AI - Zufall");
 		playerWhite.getItems().add("TCP - Server");
 		playerWhite.getItems().add("TCP - Client");
-		
+
 		try {
 			hostL.setText("Server IP: " + InetAddress.getLocalHost().getHostAddress());
 			hostL2.setText("Server IP: " + InetAddress.getLocalHost().getHostAddress());
@@ -95,13 +83,13 @@ public class MainGuiController  implements Initializable{
 			hostL2.setText("Konnte lokale IP-Adresse nicht ermitteln");
 
 		}
-		
+
 		playerBlack.getSelectionModel().select(0);
 		playerWhite.getSelectionModel().select(0);
-		
+
 		playerWhite.getSelectionModel().selectedIndexProperty().addListener((e) -> {
-			
-			if(((ReadOnlyIntegerProperty)e).get() == 1 ){
+
+			if (((ReadOnlyIntegerProperty) e).get() == 1) {
 				thinkL.visibleProperty().set(true);
 				thinkT.visibleProperty().set(true);
 
@@ -109,34 +97,36 @@ public class MainGuiController  implements Initializable{
 				thinkL.visibleProperty().set(false);
 				thinkT.visibleProperty().set(false);
 			}
-			
-			if(((ReadOnlyIntegerProperty)e).get() == 3 ){
+
+			if (((ReadOnlyIntegerProperty) e).get() == 3) {
 				hostL.visibleProperty().set(true);
 
 			} else {
 				hostL.visibleProperty().set(false);
 			}
-			
-			if(((ReadOnlyIntegerProperty)e).get() == 4 ){
+
+			if (((ReadOnlyIntegerProperty) e).get() == 4) {
 				ipL.visibleProperty().set(true);
 				ipT.visibleProperty().set(true);
 			} else {
 				ipL.visibleProperty().set(false);
 				ipT.visibleProperty().set(false);
 			}
-			
-			if((((ReadOnlyIntegerProperty)e).get() == 3 ||  ((ReadOnlyIntegerProperty)e).get() == 4) && (playerBlack.getSelectionModel().getSelectedIndex() == 3 || playerBlack.getSelectionModel().getSelectedIndex() == 4)){
+
+			if ((((ReadOnlyIntegerProperty) e).get() == 3 || ((ReadOnlyIntegerProperty) e).get() == 4)
+					&& (playerBlack.getSelectionModel().getSelectedIndex() == 3
+							|| playerBlack.getSelectionModel().getSelectedIndex() == 4)) {
 				startButton.setDisable(true);
 			} else {
 				startButton.setDisable(false);
 
 			}
-			
+
 		});
-		
+
 		playerBlack.getSelectionModel().selectedIndexProperty().addListener((e) -> {
-			
-			if(((ReadOnlyIntegerProperty)e).get() == 1 ){
+
+			if (((ReadOnlyIntegerProperty) e).get() == 1) {
 				thinkL2.visibleProperty().set(true);
 				thinkT2.visibleProperty().set(true);
 
@@ -144,38 +134,33 @@ public class MainGuiController  implements Initializable{
 				thinkL2.visibleProperty().set(false);
 				thinkT2.visibleProperty().set(false);
 			}
-			
-			if(((ReadOnlyIntegerProperty)e).get() == 3 ){
+
+			if (((ReadOnlyIntegerProperty) e).get() == 3) {
 				hostL2.visibleProperty().set(true);
 
 			} else {
 				hostL2.visibleProperty().set(false);
 			}
-			
-			
-			if(((ReadOnlyIntegerProperty)e).get() == 4 ){
+
+			if (((ReadOnlyIntegerProperty) e).get() == 4) {
 				ipL2.visibleProperty().set(true);
 				ipT2.visibleProperty().set(true);
 			} else {
 				ipL2.visibleProperty().set(false);
 				ipT2.visibleProperty().set(false);
 			}
-			
-			
-			if((((ReadOnlyIntegerProperty)e).get() == 3 ||  ((ReadOnlyIntegerProperty)e).get() == 4) && (playerWhite.getSelectionModel().getSelectedIndex() == 3 || playerWhite.getSelectionModel().getSelectedIndex() == 4)){
+
+			if ((((ReadOnlyIntegerProperty) e).get() == 3 || ((ReadOnlyIntegerProperty) e).get() == 4)
+					&& (playerWhite.getSelectionModel().getSelectedIndex() == 3
+							|| playerWhite.getSelectionModel().getSelectedIndex() == 4)) {
 				startButton.setDisable(true);
 			} else {
 				startButton.setDisable(false);
 
 			}
-			
+
 		});
 
-
-
 	}
-	
-	
-
 
 }

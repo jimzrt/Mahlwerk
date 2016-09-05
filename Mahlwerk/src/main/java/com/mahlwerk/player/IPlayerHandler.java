@@ -6,18 +6,19 @@ import com.mahlwerk.base.Game;
 import com.mahlwerk.base.Move;
 import com.mahlwerk.base.Piece.PieceColor;
 
+	/**
+	 * Interface for all Players and "Watchers"
+	 * Will be notified by Game if Move is made or Phase/State is changed
+	 * @author James Tophoven
+	 *
+	 */
 	public interface IPlayerHandler extends Runnable, Observer {
 		
-		public void startPlayer();
 		public void setGame(Game game);
-		public void continueTimer();
-		public void stopTimer();
-		public void makeMove(Move move);
-		//public void onGameStateChange(Gamestate gamestate);
-		//public void onGamePhaseChange(Gamephase gamephase);
 		public void setColor(PieceColor color);
 		public PieceColor getColor();
 		public void close();
+		public void revertLastMove();
 
 	}
 

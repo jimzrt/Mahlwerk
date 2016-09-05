@@ -9,8 +9,16 @@ import java.util.concurrent.Executors;
 import com.mahlwerk.base.Piece.PieceColor;
 import com.mahlwerk.player.IPlayerHandler;
 import com.mahlwerk.player.WatchGui;
-import com.mahlwerk.util.CountdownTask;
+import com.mahlwerk.util.CountSecondsTask;
 
+/**
+ * Game Representation
+ * Keeps track of Gamephase and -state
+ * Uses Observer-Pattern to notify all Players of changes
+ * 
+ * @author James Tophoven
+ *
+ */
 public class Game extends Observable {
 	public enum Gamephase {
 		Endgame, MoveStones, PlayerBlackMill, PlayerBlackWin, PlayerWhiteMill, PlayerWhiteWin, SetStones
@@ -21,30 +29,54 @@ public class Game extends Observable {
 	}
 
 	public static final int initialPieces = 9;
-	public static final int initialTime = 300;
 
-	private IPlayerHandler blackPlayerHandler;
+	private IPlayerHandler playerBlackHandler;
+	private IPlayerHandler playerWhiteHandler;
+	private IPlayerHandler watchgui;
+	
 	public Board board = new Board();
 	public Gamephase gamePhase = Gamephase.SetStones;
+	public Gamestate gameState = Gamestate.PlayerWhiteTurn;
 
-	public Gamestate gameState = Gamestate.Welcome;
-
-	int pieceCounter = 0;
-	ExecutorService pool = Executors.newCachedThreadPool();
+	private ExecutorService pool = Executors.newCachedThreadPool();
 	private Gamephase prevoiousGamePhase;
 
-	int timePlayerOne = initialTime;
-	int timePlayerTwo = initialTime;
-	private CountdownTask taskPlayerOneCountdown = new CountdownTask(timePlayerOne);
-	private CountdownTask taskPlayerTwoCountdown = new CountdownTask(timePlayerTwo);
 
+	private CountSecondsTask taskPlayerOneCountdown = new CountSecondsTask();
+	private CountSecondsTask taskPlayerTwoCountdown = new CountSecondsTask();
+
+	private Timer timer = new Timer();
 	
-	Timer timer = new Timer();
-	public IPlayerHandler watchgui;
+	public void startGame(boolean watchGui) {
 
-	private IPlayerHandler whitePlayerHandler;
+		if (watchGui) {
 
-	private synchronized void changeGamePhase(Gamephase gamePhase) {
+			watchgui = new WatchGui();
+			watchgui.setGame(this);
+
+			addObserver(watchgui);
+
+			pool.submit(watchgui);
+		}
+
+		addObserver(playerWhiteHandler);
+		pool.submit(playerWhiteHandler);
+
+		addObserver(playerBlackHandler);
+		pool.submit(playerBlackHandler);
+
+		board.print();
+		timer.scheduleAtFixedRate(taskPlayerOneCountdown, 0, 1000);
+		timer.scheduleAtFixedRate(taskPlayerTwoCountdown, 0, 1000);
+
+		changeGameState(Gamestate.PlayerWhiteTurn);
+		changeGamePhase(Gamephase.SetStones);
+
+
+	}
+
+
+	private void changeGamePhase(Gamephase gamePhase) {
 
 		prevoiousGamePhase = this.gamePhase;
 		this.gamePhase = gamePhase;
@@ -54,12 +86,12 @@ public class Game extends Observable {
 
 	}
 
-	public synchronized void changeGameState(Gamestate gameState) {
+	private  void changeGameState(Gamestate gameState) {
 
 		if (this.gameState == Gamestate.PlayerBlackTurn)
-			pauseTimer(blackPlayerHandler);
+			pauseTimer(playerBlackHandler);
 		else if (this.gameState == Gamestate.PlayerWhiteTurn)
-			pauseTimer(whitePlayerHandler);
+			pauseTimer(playerWhiteHandler);
 
 		this.gameState = gameState;
 
@@ -68,20 +100,20 @@ public class Game extends Observable {
 
 		switch (gameState) {
 		case PlayerBlackTurn:
-			this.continueTimer(blackPlayerHandler);
+			this.continueTimer(playerBlackHandler);
 			break;
 		case PlayerWhiteTurn:
-			this.continueTimer(whitePlayerHandler);
+			this.continueTimer(playerWhiteHandler);
 			break;
 		case GameOver:
-			if (whitePlayerHandler != null)
-				whitePlayerHandler.close();
-			if (blackPlayerHandler != null)
-				blackPlayerHandler.close();
+			if (playerWhiteHandler != null)
+				playerWhiteHandler.close();
+			if (playerBlackHandler != null)
+				playerBlackHandler.close();
 			if (watchgui != null)
 				watchgui.close();
-			whitePlayerHandler = null;
-			blackPlayerHandler = null;
+			playerWhiteHandler = null;
+			playerBlackHandler = null;
 			watchgui = null;
 			timer.cancel();
 			taskPlayerOneCountdown.cancel();
@@ -109,9 +141,9 @@ public class Game extends Observable {
 	}
 
 	private void continueTimer(IPlayerHandler player) {
-		if (player == blackPlayerHandler) {
+		if (player == playerBlackHandler) {
 			taskPlayerTwoCountdown.paused = false;
-		} else if (player == whitePlayerHandler) {
+		} else if (player == playerWhiteHandler) {
 			taskPlayerOneCountdown.paused = false;
 		}
 	}
@@ -188,7 +220,7 @@ public class Game extends Observable {
 
 		if (board.endReached() || !board.canMove(Piece.toggleColor(player.getColor()), false)) {
 
-			if (player == whitePlayerHandler) {
+			if (player == playerWhiteHandler) {
 				changeGamePhase(Gamephase.PlayerWhiteWin);
 			} else {
 				changeGamePhase(Gamephase.PlayerBlackWin);
@@ -199,7 +231,7 @@ public class Game extends Observable {
 		}
 
 		if (board.checkMill(move.moveTo) && move.removePiece == null) {
-			if (player == whitePlayerHandler) {
+			if (player == playerWhiteHandler) {
 				changeGamePhase(Gamephase.PlayerWhiteMill);
 			} else {
 				changeGamePhase(Gamephase.PlayerBlackMill);
@@ -225,14 +257,18 @@ public class Game extends Observable {
 				changeGamePhase(Gamephase.Endgame);
 			}
 		}
-		System.out.print("\033[H\033[2J");
 
 		board.print();
+
 	}
 
 	public synchronized void onMoveRevert() {
 		Move move = board.getLastMove();
 		if (move != null) {
+
+			setChanged();
+			notifyObservers("revert");
+
 			changeTurn(Piece.toggleColor(move.moveTo.color));
 
 			if (move.removePiece != null) {
@@ -250,14 +286,31 @@ public class Game extends Observable {
 			}
 
 			board.revertLastMove();
+
+			if (gamePhase == Gamephase.MoveStones) {
+
+				if (board.blackStonesSet < initialPieces || board.whiteStonesSet < initialPieces) {
+					System.out.println("Set Stone Phase begins");
+					changeGamePhase(Gamephase.SetStones);
+				}
+			}
+
+			if (gamePhase == Gamephase.Endgame) {
+
+				if (board.getRemainingPieces(playerBlackHandler.getColor()) > 3
+						&& board.getRemainingPieces(playerWhiteHandler.getColor()) > 3) {
+					System.out.println("Move Phase begins");
+					changeGamePhase(Gamephase.MoveStones);
+				}
+			}
 		}
 
 	}
 
 	private void pauseTimer(IPlayerHandler player) {
-		if (player == blackPlayerHandler) {
+		if (player == playerBlackHandler) {
 			taskPlayerTwoCountdown.paused = true;
-		} else if (player == whitePlayerHandler) {
+		} else if (player == playerWhiteHandler) {
 			taskPlayerOneCountdown.paused = true;
 		}
 
@@ -265,9 +318,9 @@ public class Game extends Observable {
 
 	public void removePlayer(IPlayerHandler player) {
 		if (gameState != Gamestate.GameOver) {
-			if (player == blackPlayerHandler)
+			if (player == playerBlackHandler)
 				changeGamePhase(Gamephase.PlayerWhiteWin);
-			else if (player == whitePlayerHandler)
+			else if (player == playerWhiteHandler)
 				changeGamePhase(Gamephase.PlayerBlackWin);
 
 			changeGameState(Gamestate.GameOver);
@@ -282,43 +335,16 @@ public class Game extends Observable {
 	public void setPlayer(IPlayerHandler player) {
 		switch (player.getColor()) {
 		case BLACK:
-			this.blackPlayerHandler = player;
+			this.playerBlackHandler = player;
 			break;
 		case WHITE:
-			this.whitePlayerHandler = player;
+			this.playerWhiteHandler = player;
 			break;
 		default:
 			throw new IllegalArgumentException("Invalid pieceColor: " + player.getColor());
 		}
 	}
 
-	public void startGame(boolean watchGui) {
 
-		if (watchGui) {
-
-			watchgui = new WatchGui();
-			watchgui.setGame(this);
-
-			addObserver(watchgui);
-
-			pool.submit(watchgui);
-		}
-
-		addObserver(whitePlayerHandler);
-		pool.submit(whitePlayerHandler);
-
-		addObserver(blackPlayerHandler);
-		pool.submit(blackPlayerHandler);
-
-		board.print();
-		timer.scheduleAtFixedRate(taskPlayerOneCountdown, 0, 1000);
-		timer.scheduleAtFixedRate(taskPlayerTwoCountdown, 0, 1000);
-
-		changeGameState(Gamestate.PlayerWhiteTurn);
-		changeGamePhase(Gamephase.SetStones);
-
-		System.out.println();
-
-	}
 
 }

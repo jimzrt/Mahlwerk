@@ -1,10 +1,8 @@
 package com.mahlwerk.ai;
 
-import java.util.HashSet;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
-
 import com.mahlwerk.base.Board;
 import com.mahlwerk.base.Game;
 import com.mahlwerk.base.Move;
@@ -94,13 +92,12 @@ public class AlphaBetaPruning {
 	/**
 	 * Get all possible Moves for chosen color
 	 * 
-	 * @param color
-	 *            Color to get best Moves for
+	 * @param color Color to get best Moves for
 	 * @return Returns Set of all possible Moves
 	 */
-	public Set<Move> getPossibleMoves(PieceColor color) {
+	public List<Move> getPossibleMoves(PieceColor color) {
 
-		Set<Move> possibleMoves = new HashSet<Move>();
+		List<Move> possibleMoves = new ArrayList<Move>();
 		int stonesSet = color == PieceColor.BLACK ? board.blackStonesSet : board.whiteStonesSet;
 
 		// set phase
@@ -274,7 +271,7 @@ public class AlphaBetaPruning {
 		long currentTime = System.currentTimeMillis();
 
 		int bestValue = -INFINITY;
-		Set<Move> possMoves = getPossibleMoves(color);
+		List<Move> possMoves = getPossibleMoves(color);
 		Iterator<Move> moves = possMoves.iterator();
 		while (moves.hasNext()) {
 			Move move = moves.next();
@@ -394,7 +391,7 @@ public class AlphaBetaPruning {
 	}
 
 	private int evalDoubleMillCount(PieceColor color) {
-		return board.doubleMillCount(color) - board.doubleMillCount(Piece.toggleColor(color));
+		return board.getDoubleMillCount(color) - board.getDoubleMillCount(Piece.toggleColor(color));
 	}
 
 	private int evalNumberOfMorrises(PieceColor color) {

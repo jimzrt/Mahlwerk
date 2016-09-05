@@ -5,6 +5,8 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Observable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import com.mahlwerk.base.Board;
 import com.mahlwerk.base.Game;
@@ -23,6 +25,7 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Bounds;
 import javafx.geometry.Insets;
 import javafx.geometry.Point2D;
 import javafx.scene.Scene;
@@ -38,15 +41,18 @@ import javafx.scene.layout.CornerRadii;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.media.AudioClip;
-import javafx.scene.media.Media;
-import javafx.scene.media.MediaPlayer;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Line;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
-public class WatchGui implements IPlayerHandler{
-
+/**
+ * Player that acts as Watching Board, no interaction possible
+ * @author James Tophoven
+ *
+ */
+public class WatchGui implements IPlayerHandler {
 
 	public boolean active = false;
 	Image blackCircle = new Image(getClass().getResourceAsStream("/img/goBlack3.png"));
@@ -58,14 +64,16 @@ public class WatchGui implements IPlayerHandler{
 	SimpleStringProperty bottomLabel3 = new SimpleStringProperty();
 	List<Button> buttons = new ArrayList<Button>();
 
-//	public PieceColor color;
+	// public PieceColor color;
 	HumanPlayerGuiController controller;
 
 	Task<Void> dynamicTimeTask = new Task<Void>() {
 		@Override
 		protected Void call() throws Exception {
 			while (true) {
-				Platform.runLater(() -> {controller.bottomLabel3.setText("Zeit: " + game.getRemainingTime(getColor()) + " sek");});
+				Platform.runLater(() -> {
+					controller.bottomLabel3.setText("Zeit: " + game.getRemainingTime(getColor()) + " sek");
+				});
 				try {
 					Thread.sleep(1000);
 				} catch (InterruptedException ex) {
@@ -81,17 +89,15 @@ public class WatchGui implements IPlayerHandler{
 	public Game game;
 	private GridPane grid;
 
+	AudioClip mediaPlayer = null;
+	AudioClip mediaPlayerSlide = null;
 
+	ExecutorService pool = Executors.newSingleThreadExecutor();
 
 	private Rectangle rect;
 	private Rectangle rect2;
-
 	private AnchorPane root;
 
-	AudioClip sound = null;
-	AudioClip soundSlide = null;
-	AudioClip mediaPlayer = null;
-	AudioClip mediaPlayerSlide = null;
 	private ArrayList<Button> stoneListBlack;
 
 	private ArrayList<Button> stoneListWhite;
@@ -105,96 +111,25 @@ public class WatchGui implements IPlayerHandler{
 	public WatchGui() {
 
 		try {
-			mediaPlayer =  new AudioClip(getClass().getResource("/sound/klack.wav").toURI().toString());
+			mediaPlayer = new AudioClip(getClass().getResource("/sound/klack.wav").toURI().toString());
 			mediaPlayerSlide = new AudioClip(getClass().getResource("/sound/slide.wav").toURI().toString());
-			//mediaPlayer =  new MediaPlayer(sound);
-			//mediaPlayerSlide = new MediaPlayer(soundSlide);
-			
+
 		} catch (URISyntaxException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
-		
+
 	}
 
 	public WatchGui(Game game, PieceColor color) {
 		this.game = game;
-	//	this.color = color;
 		this.board = game.board;
 
 	}
 
 	@Override
-	public void continueTimer() {
-		// TODO Auto-generated method stub
-
+	public void close() {
+		pool.shutdown();
 	}
-
-//	private int evalBlockedPieces(PieceColor color) {
-//		return board.getBlockedCount(Piece.toggleColor(color)) - board.getBlockedCount(color);
-//	}
-//
-//	private int evalDoubleMillCount(PieceColor color) {
-//		return board.doubleMillCount(color) - board.doubleMillCount(Piece.toggleColor(color));
-//	}
-//
-//	private int evalNumberOfMorrises(PieceColor color) {
-//		if (color == PieceColor.WHITE)
-//			return board.playerWhiteMillCount - board.playerBlackMillCount;
-//		else
-//			return board.playerBlackMillCount - board.playerWhiteMillCount;
-//
-//	}
-//
-//	private int evalNumberOfPieces(PieceColor color) {
-//		return board.getRemainingPieces(color) - board.getRemainingPieces(Piece.toggleColor(color));
-//	}
-//
-//	private int evalThreePieceConfiguration(PieceColor color) {
-//		return board.threePieceConfigurationCount(color) - board.threePieceConfigurationCount(Piece.toggleColor(color));
-//	}
-//
-//	private int evalTwoPieceConfiguration(PieceColor color) {
-//		return board.twoPieceConfigurationCount(color) - board.twoPieceConfigurationCount(Piece.toggleColor(color));
-//	}
-//
-//	private int evaluateBoard(PieceColor color) {
-//
-//		if (color == PieceColor.BLACK ? (board.blackStonesSet < Game.initialPieces)
-//				: (board.whiteStonesSet < Game.initialPieces)) {
-//
-//			return 26 * evalNumberOfMorrises(color) + 1 * evalBlockedPieces(color) + 6 * evalNumberOfPieces(color)
-//			+ 12 * evalTwoPieceConfiguration(color) + 7 * evalThreePieceConfiguration(color)
-//			+ 1086 * evalWin(color);
-//
-//		} else {
-//			if (board.getRemainingPieces(color) < 4) {
-//				return 43 * evalNumberOfMorrises(color) + 10 * evalBlockedPieces(color) + 8 * evalNumberOfPieces(color)
-//				+ 7 * evalTwoPieceConfiguration(color) + 42 * evalDoubleMillCount(color)
-//				+ 1086 * evalWin(color);
-//
-//			} else {
-//				return 43 * evalNumberOfMorrises(color) + 10 * evalBlockedPieces(color) + 8 * evalNumberOfPieces(color)
-//				+ 7 * evalTwoPieceConfiguration(color) + 42 * evalDoubleMillCount(color)
-//				+ 1086 * evalWin(color);
-//
-//			}
-//		}
-//
-//	}
-//
-//	private int evalWin(PieceColor color) {
-//		if (!board.endReached()) {
-//			return 0;
-//		} else {
-//			if (board.canMove(color, true) && board.getRemainingPieces(color) > 2) {
-//				return 1;
-//			} else {
-//				return -1;
-//			}
-//		}
-//	}
 
 	@Override
 	public PieceColor getColor() {
@@ -217,15 +152,10 @@ public class WatchGui implements IPlayerHandler{
 
 		System.out.println((Piece) ((Button) event.getSource()).getUserData());
 
-		
-
 	}
-
-
 
 	public void initializeGui() {
 		try {
-			// Load person overview.
 			FXMLLoader loader = new FXMLLoader();
 
 			loader.setLocation(HumanPlayerGui.class.getResource("/fxml/HumanPlayerGuiFXML.fxml"));
@@ -239,7 +169,6 @@ public class WatchGui implements IPlayerHandler{
 
 	}
 
-	@Override
 	public void makeMove(Move move) {
 
 		if (move.moveFrom != null && move.moveTo != null) {
@@ -283,37 +212,31 @@ public class WatchGui implements IPlayerHandler{
 		final Button buttonToF = buttonTo;
 
 		Point2D buttonFBounds = buttonFromF.localToScreen(0, 0);
-		Point2D buttonTBounds = buttonToF.localToScreen(0, 0);
 
-		double offsetX = buttonTBounds.getX() - buttonFBounds.getX();
-		double offsetY = buttonTBounds.getY() - buttonFBounds.getY();
+		buttonToF.setTranslateX(buttonToF.screenToLocal(buttonFBounds).getX());
+		buttonToF.setTranslateY(buttonToF.screenToLocal(buttonFBounds).getY());
 
-		double length = Math.max(Math.abs(offsetX), Math.abs(offsetY));
-		length = length / 420;
-
-		TranslateTransition tt = new TranslateTransition(Duration.seconds(.5), buttonFromF);
+		TranslateTransition tt = new TranslateTransition(Duration.seconds(.5), buttonToF);
 		mediaPlayerSlide.setRate(1);
 
 		tt.setInterpolator(Interpolator.LINEAR);
 
-		tt.setToX(buttonFromF.screenToLocal(buttonTBounds).getX());
-		tt.setToY(buttonFromF.screenToLocal(buttonTBounds).getY());
+		tt.setToX(0);
+		tt.setToY(0);
 
 		Platform.runLater(new Runnable() {
 			@Override
 			public void run() {
-
+				synchronized (board) {
+					buttonFromF.setGraphic(getImageForColor(board.getPieceColor(move1.x, move1.y)));
+					buttonToF.setGraphic(getImageForColor(board.getPieceColor(move2.x, move2.y)));
+				}
 				tt.play();
 				mediaPlayerSlide.play();
 				tt.onFinishedProperty().set((ActionEvent event) -> {
 
-					synchronized (board) {
-						buttonFromF.setGraphic(getImageForColor(board.getPieceColor(move1.x, move1.y)));
-						buttonToF.setGraphic(getImageForColor(board.getPieceColor(move2.x, move2.y)));
-					}
-
-					buttonFromF.translateXProperty().set(0);
-					buttonFromF.translateYProperty().set(0);
+					buttonToF.translateXProperty().set(0);
+					buttonToF.translateYProperty().set(0);
 
 				});
 
@@ -323,16 +246,14 @@ public class WatchGui implements IPlayerHandler{
 
 	}
 
-
-
 	public void removePiece(Piece removePiece) {
 		Piece move = new Piece(removePiece);
 		for (Button button : buttons) {
 			if (((Piece) button.getUserData()).x == move.x && ((Piece) button.getUserData()).y == move.y) {
+				button.setUserData(move);
 				Platform.runLater(new Runnable() {
 					@Override
 					public void run() {
-						button.setUserData(move);
 
 						FadeTransition fade = new FadeTransition(Duration.millis(500), button);
 						fade.setFromValue(1.0);
@@ -357,8 +278,104 @@ public class WatchGui implements IPlayerHandler{
 	}
 
 	@Override
+	public void revertLastMove() {
+
+		synchronized (this) {
+
+			Move move = game.board.getLastMove();
+
+			if (move != null) {
+
+				if (move.moveFrom == null && move.moveTo != null) {
+					if (move.moveTo.color == PieceColor.BLACK) {
+
+						Button testbutton = new Button();
+						testbutton.getStyleClass().add("boardButton");
+						testbutton.setGraphic(new ImageView(blackCircle));
+						Platform.runLater(() -> {
+							controller.bottomBar.getChildren().add(testbutton);
+						});
+						if (stoneListBlack.isEmpty()) {
+							testbutton.setTranslateY(0);
+
+						} else {
+							testbutton
+									.setTranslateY(stoneListBlack.get(stoneListBlack.size() - 1).getTranslateY() + 35);
+
+						}
+						testbutton.setTranslateX(20);
+						stoneListBlack.add(testbutton);
+
+					} else if (move.moveTo.color == PieceColor.WHITE) {
+						Button testbutton = new Button();
+						testbutton.getStyleClass().add("boardButton");
+						testbutton.setGraphic(new ImageView(whiteCircle));
+						Platform.runLater(() -> {
+							controller.topBar.getChildren().add(testbutton);
+						});
+						if (stoneListWhite.isEmpty()) {
+							testbutton.setTranslateY(0);
+
+						} else {
+							testbutton
+									.setTranslateY(stoneListWhite.get(stoneListWhite.size() - 1).getTranslateY() + 35);
+
+						}
+						testbutton.setTranslateX(-50);
+						stoneListWhite.add(testbutton);
+					}
+
+				}
+
+				if (move.removePiece != null) {
+					if (move.removePiece.color == PieceColor.BLACK) {
+
+						Button testbutton = new Button();
+						testbutton.getStyleClass().add("boardButton");
+						testbutton.setGraphic(new ImageView(blackCircle));
+						Platform.runLater(() -> {
+							controller.bottomBar.getChildren().add(testbutton);
+						});
+						if (stoneListBlack.isEmpty()) {
+							testbutton.setTranslateY(0);
+
+						} else {
+							testbutton
+									.setTranslateY(stoneListBlack.get(stoneListBlack.size() - 1).getTranslateY() + 35);
+
+						}
+						testbutton.setTranslateX(20);
+						stoneListBlack.add(testbutton);
+
+					} else if (move.removePiece.color == PieceColor.WHITE) {
+						Button testbutton = new Button();
+						testbutton.getStyleClass().add("boardButton");
+						testbutton.setGraphic(new ImageView(whiteCircle));
+						Platform.runLater(() -> {
+							controller.topBar.getChildren().add(testbutton);
+						});
+						if (stoneListWhite.isEmpty()) {
+							testbutton.setTranslateY(0);
+
+						} else {
+							testbutton
+									.setTranslateY(stoneListWhite.get(stoneListWhite.size() - 1).getTranslateY() + 35);
+
+						}
+						testbutton.setTranslateX(-50);
+						stoneListWhite.add(testbutton);
+					}
+
+				}
+
+			}
+		}
+
+	}
+
+	@Override
 	public void run() {
-		System.out.println("Hello Friend -  Gui started");
+		System.out.println("Hello Friend - Watch Gui started");
 		game.addObserver(this);
 
 		Platform.runLater(new Runnable() {
@@ -373,13 +390,6 @@ public class WatchGui implements IPlayerHandler{
 
 	@Override
 	public void setColor(PieceColor color) {
-//		this.color = color;
-//		this.myTurn = color == PieceColor.BLACK ? Gamestate.PlayerBlackTurn : Gamestate.PlayerWhiteTurn;
-//		this.otherTurn = myTurn == Gamestate.PlayerBlackTurn ? Gamestate.PlayerWhiteTurn : Gamestate.PlayerBlackTurn;
-//		this.myMill = myTurn == Gamestate.PlayerBlackTurn ? Gamephase.PlayerBlackMill : Gamephase.PlayerWhiteMill;
-//		this.otherMill = myMill == Gamephase.PlayerBlackMill ? Gamephase.PlayerWhiteMill : Gamephase.PlayerBlackMill;
-//		this.myWin = color == PieceColor.BLACK ? Gamephase.PlayerBlackWin : Gamephase.PlayerWhiteWin;
-//		this.otherWin = color == PieceColor.WHITE ? Gamephase.PlayerBlackWin : Gamephase.PlayerWhiteWin;
 
 	}
 
@@ -456,6 +466,7 @@ public class WatchGui implements IPlayerHandler{
 
 		primaryStage.setOnCloseRequest(e -> {
 			game.removePlayer(this);
+			close();
 			System.out.println("closing");
 			return;
 		});
@@ -467,60 +478,56 @@ public class WatchGui implements IPlayerHandler{
 			for (int col = 0; col < Board.SIZE; col++) {
 				StackPane square = new StackPane();
 
-				Button botton = new Button();
-				botton.getStyleClass().add("boardButton");
-
-				botton.setUserData(new Piece(PieceColor.EMPTY, col, row));
-				botton.setOnMouseClicked(this::handleButtonAction);
-				buttons.add(botton);
-
-				square.getChildren().add(botton);
+			
 				tiles.add(square);
 				grid.add(square, col, row);
 
 			}
 		}
+		Scene scene = new Scene(root);
+		primaryStage.setScene(scene);
+		primaryStage.setResizable(true);
+		primaryStage.sizeToScene();
+		primaryStage.setTitle("Zuschauen");
+		primaryStage.getIcons().add(new Image(
+				getClass().getResourceAsStream("/img/goBlack3.png" )));
+		
+		scene.widthProperty().addListener((e) -> {
+			drawLines();
+		});
+		scene.heightProperty().addListener((e) -> {
+			drawLines();
+		});
+		//  controller.gridParent.minWidthProperty().bind(controller.gridParent.heightProperty());
+		//  controller.gridParent.minHeightProperty().bind(controller.gridParent.widthProperty());
+		primaryStage.show();
+		drawLines();
+
+		int x = 0;
+		int y = 0;
+		for(StackPane square : tiles){
+			Button botton = new Button();
+			botton.getStyleClass().add("boardButton");
+
+			botton.setUserData(new Piece(PieceColor.EMPTY, x, y));
+			botton.setOnMouseClicked(this::handleButtonAction);
+			buttons.add(botton);
+
+			square.getChildren().add(botton);
+			x = (x +1) % Board.SIZE; 
+			if(x == 0)
+				y=(y+1) % Board.SIZE;
+		}
 
 		controller.topLabel.textProperty().bind(topLabel);
 		controller.bottomLabel1.textProperty().bind(bottomLabel1);
 		controller.bottomLabel2.textProperty().bind(bottomLabel2);
-		
-		 Thread t2 = new Thread(dynamicTimeTask);
-				 t2.setName("Tesk Time Updater");
-				 t2.setDaemon(true);
-				 t2.start();
-		
 
-controller.revertButton.setDisable(true);
-controller.revertButton.setOpacity(1);
+		pool.submit(dynamicTimeTask);
 
-//		controller.revertButton.setOnAction((event) -> {
-//			game.onMoveRevert();
-//
-////			System.out.format(
-////					"Human player - Number of Morris: %d, blockedPieces: %d, numberOfPieces: %d, twoPieces: %d, threePieces: %d, doubleMill: %d, win: %d",
-////					evalNumberOfMorrises(color), evalBlockedPieces(color), evalNumberOfPieces(color),
-////					evalTwoPieceConfiguration(color), evalThreePieceConfiguration(color), evalDoubleMillCount(color),
-////					evalWin(color));
-////			System.out.println("");
-////			System.out.println("AI Score: " + evaluateBoard(color)); // game.onPlayerRevert(this);
-//		});
-		// Thread t2 = new Thread(dynamicTimeTask);
-		// t2.setName("Tesk Time Updater");
-		// t2.setDaemon(true);
-		// t2.start();
+		controller.revertButton.setDisable(true);
 
-		// grid.getStylesheets().clear();
-		//
-		// border.setCenter(root);
-		// root.setPadding(new Insets(0, 0, 0, 0));
-		primaryStage.setScene(new Scene(root));
-		primaryStage.setResizable(false);
-		primaryStage.sizeToScene();
-		primaryStage.setTitle("Zuschauen");
-		primaryStage.getIcons().add(new Image(getClass().getResourceAsStream( "/img/goWhite3.png")));
 
-		primaryStage.show();
 
 		rect = new Rectangle(controller.topBar.getWidth(), controller.topBar.getHeight());
 		rect.setFill(Color.rgb(55, 55, 55));
@@ -553,138 +560,237 @@ controller.revertButton.setOpacity(1);
 		}
 
 	}
-	@Override
-	public void startPlayer() {
 
-	}
-	@Override
-	public void stopTimer() {
-		// TODO Auto-generated method stub
+	
+	public void drawLines(){
+		
+		System.out.println("Drawwwing");
+		if(controller.gridParent.getChildren().get(0) instanceof Line){
+			controller.gridParent.getChildren().remove(0, 7);
+		}
 
+
+		Bounds bounds = tiles.get(0).getBoundsInLocal();
+		Bounds screenBounds = tiles.get(0).localToScreen(bounds);
+		int width = (int) screenBounds.getWidth();
+		int height = (int) screenBounds.getHeight();
+		
+
+		Rectangle rect = new Rectangle();
+		rect.setMouseTransparent(true);
+		rect.setStrokeWidth(5);
+		rect.setFill(Color.TRANSPARENT);
+		//rect.setStroke(Color.rgb(90, 46,46));
+		//root.getStylesheets().add(getClass().getResource("/css/board.css").toExternalForm());
+		rect.getStyleClass().add("line");
+
+		rect.setX(controller.gridParent.screenToLocal(tiles.get(0).localToScreen(width/2,height/2)).getX());
+		rect.setY(controller.gridParent.screenToLocal(tiles.get(0).localToScreen(width/2,height/2)).getY());
+		rect.setWidth((tiles.get(6).localToScreen(width/2,height/2).subtract(tiles.get(0).localToScreen(width/2,height/2))).getX());
+		rect.setHeight((tiles.get(48).localToScreen(width/2,height/2).subtract(tiles.get(0).localToScreen(width/2,height/2))).getY());
+		rect.toBack();
+		controller.gridParent.getChildren().add(rect);
+		rect.toBack();
+		
+		Rectangle rect2 = new Rectangle();
+		rect2.setMouseTransparent(true);
+		rect2.setStrokeWidth(5);
+		rect2.setFill(Color.TRANSPARENT);
+		//rect2.setStroke(Color.rgb(90, 46,46));
+		rect2.getStyleClass().add("line");
+		rect2.setX(controller.gridParent.screenToLocal(tiles.get(8).localToScreen(width/2,height/2)).getX());
+		rect2.setY(controller.gridParent.screenToLocal(tiles.get(8).localToScreen(width/2,height/2)).getY());
+		rect2.setWidth((tiles.get(12).localToScreen(width/2,height/2).subtract(tiles.get(8).localToScreen(width/2,height/2))).getX());
+		rect2.setHeight((tiles.get(36).localToScreen(width/2,height/2).subtract(tiles.get(8).localToScreen(width/2,height/2))).getY());
+		controller.gridParent.getChildren().add(rect2);
+		rect2.toBack();
+
+		Rectangle rect3 = new Rectangle();
+		rect3.setMouseTransparent(true);
+		rect3.setStrokeWidth(5);
+		rect3.setFill(Color.TRANSPARENT);
+		//rect3.setStroke(Color.rgb(90, 46,46));
+		rect3.getStyleClass().add("line");
+		rect3.setX(controller.gridParent.screenToLocal(tiles.get(16).localToScreen(width/2,height/2)).getX());
+		rect3.setY(controller.gridParent.screenToLocal(tiles.get(16).localToScreen(width/2,height/2)).getY());
+		rect3.setWidth((tiles.get(18).localToScreen(width/2,height/2).subtract(tiles.get(16).localToScreen(width/2,height/2))).getX());
+		rect3.setHeight((tiles.get(30).localToScreen(width/2,height/2).subtract(tiles.get(16).localToScreen(width/2,height/2))).getY());
+		controller.gridParent.getChildren().add(rect3);
+		rect3.toBack();
+
+		Line line = new Line();
+		line.setStrokeWidth(2);
+		//line.setStroke(Color.rgb(90, 46,46));
+		line.getStyleClass().add("line");
+		line.setStartX(controller.gridParent.screenToLocal(tiles.get(3).localToScreen(width/2,height/2)).getX());
+		line.setStartY(controller.gridParent.screenToLocal(tiles.get(3).localToScreen(width/2,height/2)).getY());
+		line.setEndX(controller.gridParent.screenToLocal(tiles.get(17).localToScreen(width/2,height/2)).getX());
+		line.setEndY(controller.gridParent.screenToLocal(tiles.get(17).localToScreen(width/2,height/2)).getY());
+		controller.gridParent.getChildren().add(line);
+		line.toBack();
+
+		Line line2 = new Line();
+		line2.setStrokeWidth(2);
+		//line2.setStroke(Color.rgb(90, 46,46));
+		line2.getStyleClass().add("line");
+		line2.setStartX(controller.gridParent.screenToLocal(tiles.get(21).localToScreen(width/2,height/2)).getX());
+		line2.setStartY(controller.gridParent.screenToLocal(tiles.get(21).localToScreen(width/2,height/2)).getY());
+		line2.setEndX(controller.gridParent.screenToLocal(tiles.get(23).localToScreen(width/2,height/2)).getX());
+		line2.setEndY(controller.gridParent.screenToLocal(tiles.get(23).localToScreen(width/2,height/2)).getY());
+		controller.gridParent.getChildren().add(line2);
+		line2.toBack();
+		
+		Line line3 = new Line();
+		line3.setStrokeWidth(2);
+		//line3.setStroke(Color.rgb(90, 46,46));
+		line3.getStyleClass().add("line");
+		line3.setStartX(controller.gridParent.screenToLocal(tiles.get(25).localToScreen(width/2,height/2)).getX());
+		line3.setStartY(controller.gridParent.screenToLocal(tiles.get(25).localToScreen(width/2,height/2)).getY());
+		line3.setEndX(controller.gridParent.screenToLocal(tiles.get(27).localToScreen(width/2,height/2)).getX());
+		line3.setEndY(controller.gridParent.screenToLocal(tiles.get(27).localToScreen(width/2,height/2)).getY());
+		controller.gridParent.getChildren().add(line3);
+		line3.toBack();
+
+		
+		Line line4 = new Line();
+		line4.setStrokeWidth(2);
+		//line4.setStroke(Color.rgb(90, 46,46));
+		line4.getStyleClass().add("line");
+		line4.setStartX(controller.gridParent.screenToLocal(tiles.get(31).localToScreen(width/2,height/2)).getX());
+		line4.setStartY(controller.gridParent.screenToLocal(tiles.get(31).localToScreen(width/2,height/2)).getY());
+		line4.setEndX(controller.gridParent.screenToLocal(tiles.get(45).localToScreen(width/2,height/2)).getX());
+		line4.setEndY(controller.gridParent.screenToLocal(tiles.get(45).localToScreen(width/2,height/2)).getY());
+		controller.gridParent.getChildren().add(line4);
+		line4.toBack();
+
+	
+		
 	}
 
 	@Override
 	public void update(Observable o, Object arg) {
-		if(arg instanceof Move){
+		if (arg instanceof Move) {
 			makeMove((Move) arg);
 			return;
 		}
 
-		Platform.runLater(() -> {
-
-			bottomLabel2.set("Züge: " + board.moveCounter);
-
-			if (arg instanceof Gamestate) {
-
-				if (game.gameState == Gamestate.PlayerBlackTurn) {
-					fadeT.stop();
-					fillT2.stop();
-
-					fadeT = new FillTransition(Duration.millis(1000), rect, Color.rgb(120, 120, 120),
-							Color.rgb(55, 55, 55));
-					fadeT.setInterpolator(Interpolator.LINEAR);
-					fadeT.play();
-					fillT2 = new FillTransition(Duration.millis(1000), rect2, Color.rgb(120, 120, 120),
-							Color.rgb(55, 55, 55));
-					fillT2.setInterpolator(Interpolator.LINEAR);
-					fillT2.play();
-
-					controller.topBar.setBackground(
-							new Background(new BackgroundFill(Color.rgb(55, 55, 55), CornerRadii.EMPTY, Insets.EMPTY)));
-					controller.bottomBar.setBackground(
-							new Background(new BackgroundFill(Color.rgb(55, 55, 55), CornerRadii.EMPTY, Insets.EMPTY)));
-
-				} else if (game.gameState == Gamestate.PlayerWhiteTurn) {
-
-					fadeT.stop();
-					fillT2.stop();
-
-					fadeT = new FillTransition(Duration.millis(1000), rect, Color.rgb(55, 55, 55),
-							Color.rgb(120, 120, 120));
-					fadeT.setInterpolator(Interpolator.LINEAR);
-					fadeT.play();
-					fillT2 = new FillTransition(Duration.millis(1000), rect2, Color.rgb(55, 55, 55),
-							Color.rgb(120, 120, 120));
-					fillT2.setInterpolator(Interpolator.LINEAR);
-					fillT2.play();
-
-				}
-				if (game.gameState == Gamestate.PlayerBlackTurn) {
-					topLabel.set("Schwarz ist am Zug!");
-				} else if (game.gameState == Gamestate.PlayerWhiteTurn) {
-					topLabel.set("Weiß ist am Zug!");
-
-				} else if (game.gameState == Gamestate.GameOver) {
-					topLabel.set("Game Over!");
-				}
-
-			} else if (arg instanceof Gamephase) {
-
-				if (game.gamePhase == Gamephase.PlayerBlackMill || game.gamePhase == Gamephase.PlayerWhiteMill) {
-					bottomLabel1.set("Mühle!");
-					// textField.setText("Mühle!");
-					fadeT.stop();
-					fillT2.stop();
-
-					fadeT = new FillTransition(Duration.millis(300), rect, Color.rgb(55, 55, 55),
-							Color.rgb(120, 120, 120));
-					fadeT.setInterpolator(Interpolator.LINEAR);
-					fadeT.setCycleCount(5);
-					fadeT.setAutoReverse(true);
-					fadeT.play();
-
-					fillT2 = new FillTransition(Duration.millis(300), rect2, Color.rgb(55, 55, 55),
-							Color.rgb(120, 120, 120));
-					fillT2.setInterpolator(Interpolator.LINEAR);
-					fillT2.setCycleCount(5);
-					fadeT.setAutoReverse(true);
-					fillT2.play();
-
-				
-				} else if (game.gamePhase == Gamephase.SetStones) {
-					bottomLabel1.set("Phase 1: Steine setzen");
-				} else if (game.gamePhase == Gamephase.MoveStones) {
-					bottomLabel1.set("Phase 2: Steine versetzen");
-				} else if (game.gamePhase == Gamephase.Endgame) {
-					bottomLabel1.set("Phase 3: Endspiel");
-				} else if (game.gamePhase == Gamephase.PlayerBlackWin) {
-					bottomLabel1.set("Schwarz hat gewonnen!");
-					fadeT.stop();
-					fillT2.stop();
-					fadeT = new FillTransition(Duration.millis(1000), rect, (Color) rect.getFill(), Color.DARKSEAGREEN);
-					fadeT.setInterpolator(Interpolator.LINEAR);
-					fadeT.play();
-					fillT2 = new FillTransition(Duration.millis(1000), rect2, (Color) rect2.getFill(),
-							Color.DARKSEAGREEN);
-					fillT2.setInterpolator(Interpolator.LINEAR);
-					fillT2.play();
-					grid.setEffect(new GaussianBlur());
-				} else if (game.gamePhase == Gamephase.PlayerWhiteWin) {
-					bottomLabel1.set("Weiß hat gewonnen!");
-					fadeT.stop();
-					fillT2.stop();
-					fadeT = new FillTransition(Duration.millis(1000), rect, (Color) rect.getFill(), Color.DARKSEAGREEN);
-					fadeT.setInterpolator(Interpolator.LINEAR);
-					fadeT.play();
-					fillT2 = new FillTransition(Duration.millis(1000), rect2, (Color) rect2.getFill(),
-							Color.DARKSEAGREEN);
-					fillT2.setInterpolator(Interpolator.LINEAR);
-					fillT2.play();
-					grid.setEffect(new GaussianBlur());
-
-				}
-
+		if (arg instanceof String) {
+			if (((String) arg).equals("revert")) {
+				revertLastMove();
 			}
-		});
+			return;
+		}
+
+		if (arg instanceof Gamestate || arg instanceof Gamephase) {
+			Platform.runLater(() -> {
+
+				bottomLabel2.set("Züge: " + board.moveCounter);
+
+				if (arg instanceof Gamestate) {
+
+					if (game.gameState == Gamestate.PlayerBlackTurn) {
+						fadeT.stop();
+						fillT2.stop();
+
+						fadeT = new FillTransition(Duration.millis(1000), rect, Color.rgb(120, 120, 120),
+								Color.rgb(55, 55, 55));
+						fadeT.setInterpolator(Interpolator.LINEAR);
+						fadeT.play();
+						fillT2 = new FillTransition(Duration.millis(1000), rect2, Color.rgb(120, 120, 120),
+								Color.rgb(55, 55, 55));
+						fillT2.setInterpolator(Interpolator.LINEAR);
+						fillT2.play();
+
+						controller.topBar.setBackground(new Background(
+								new BackgroundFill(Color.rgb(55, 55, 55), CornerRadii.EMPTY, Insets.EMPTY)));
+						controller.bottomBar.setBackground(new Background(
+								new BackgroundFill(Color.rgb(55, 55, 55), CornerRadii.EMPTY, Insets.EMPTY)));
+
+					} else if (game.gameState == Gamestate.PlayerWhiteTurn) {
+
+						fadeT.stop();
+						fillT2.stop();
+
+						fadeT = new FillTransition(Duration.millis(1000), rect, Color.rgb(55, 55, 55),
+								Color.rgb(120, 120, 120));
+						fadeT.setInterpolator(Interpolator.LINEAR);
+						fadeT.play();
+						fillT2 = new FillTransition(Duration.millis(1000), rect2, Color.rgb(55, 55, 55),
+								Color.rgb(120, 120, 120));
+						fillT2.setInterpolator(Interpolator.LINEAR);
+						fillT2.play();
+
+					}
+					if (game.gameState == Gamestate.PlayerBlackTurn) {
+						topLabel.set("Schwarz ist am Zug!");
+					} else if (game.gameState == Gamestate.PlayerWhiteTurn) {
+						topLabel.set("Weiß ist am Zug!");
+
+					} else if (game.gameState == Gamestate.GameOver) {
+						topLabel.set("Game Over!");
+					}
+
+				} else if (arg instanceof Gamephase) {
+
+					if (game.gamePhase == Gamephase.PlayerBlackMill || game.gamePhase == Gamephase.PlayerWhiteMill) {
+						bottomLabel1.set("Mühle!");
+						// textField.setText("Mühle!");
+						fadeT.stop();
+						fillT2.stop();
+
+						fadeT = new FillTransition(Duration.millis(300), rect, Color.rgb(55, 55, 55),
+								Color.rgb(120, 120, 120));
+						fadeT.setInterpolator(Interpolator.LINEAR);
+						fadeT.setCycleCount(5);
+						fadeT.setAutoReverse(true);
+						fadeT.play();
+
+						fillT2 = new FillTransition(Duration.millis(300), rect2, Color.rgb(55, 55, 55),
+								Color.rgb(120, 120, 120));
+						fillT2.setInterpolator(Interpolator.LINEAR);
+						fillT2.setCycleCount(5);
+						fadeT.setAutoReverse(true);
+						fillT2.play();
+
+					} else if (game.gamePhase == Gamephase.SetStones) {
+						bottomLabel1.set("Phase 1: Steine setzen");
+					} else if (game.gamePhase == Gamephase.MoveStones) {
+						bottomLabel1.set("Phase 2: Steine versetzen");
+					} else if (game.gamePhase == Gamephase.Endgame) {
+						bottomLabel1.set("Phase 3: Endspiel");
+					} else if (game.gamePhase == Gamephase.PlayerBlackWin) {
+						bottomLabel1.set("Schwarz hat gewonnen!");
+						fadeT.stop();
+						fillT2.stop();
+						fadeT = new FillTransition(Duration.millis(1000), rect, (Color) rect.getFill(),
+								Color.DARKSEAGREEN);
+						fadeT.setInterpolator(Interpolator.LINEAR);
+						fadeT.play();
+						fillT2 = new FillTransition(Duration.millis(1000), rect2, (Color) rect2.getFill(),
+								Color.DARKSEAGREEN);
+						fillT2.setInterpolator(Interpolator.LINEAR);
+						fillT2.play();
+						grid.setEffect(new GaussianBlur());
+					} else if (game.gamePhase == Gamephase.PlayerWhiteWin) {
+						bottomLabel1.set("Weiß hat gewonnen!");
+						fadeT.stop();
+						fillT2.stop();
+						fadeT = new FillTransition(Duration.millis(1000), rect, (Color) rect.getFill(),
+								Color.DARKSEAGREEN);
+						fadeT.setInterpolator(Interpolator.LINEAR);
+						fadeT.play();
+						fillT2 = new FillTransition(Duration.millis(1000), rect2, (Color) rect2.getFill(),
+								Color.DARKSEAGREEN);
+						fillT2.setInterpolator(Interpolator.LINEAR);
+						fillT2.play();
+						grid.setEffect(new GaussianBlur());
+
+					}
+
+				}
+			});
+		}
 
 	}
 
-	@Override
-	public void close() {
-		// TODO Auto-generated method stub
-		
-	}
-
-
-		
 }
