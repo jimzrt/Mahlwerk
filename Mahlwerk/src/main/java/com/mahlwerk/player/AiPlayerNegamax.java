@@ -12,7 +12,7 @@ import com.mahlwerk.base.Piece.PieceColor;
 
 /**
  * Player that delegates to AlphaBetaPruning - Class
- * @author james
+ * @author James Tophoven
  *
  */
 public class AiPlayerNegamax implements IPlayerHandler {

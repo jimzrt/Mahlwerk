@@ -3,7 +3,6 @@ package com.mahlwerk.player;
 import java.util.Observer;
 
 import com.mahlwerk.base.Game;
-import com.mahlwerk.base.Move;
 import com.mahlwerk.base.Piece.PieceColor;
 
 	/**
