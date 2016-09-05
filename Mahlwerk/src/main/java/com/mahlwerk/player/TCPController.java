@@ -15,6 +15,8 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 
 /**
@@ -25,7 +27,7 @@ import javafx.scene.layout.StackPane;
 public class TCPController implements Initializable{
 	
 	@FXML
-	public ListView<StackPane> chatList;
+	public ListView<BorderPane> chatList;
 	
 	@FXML
 	public TextField textField;
@@ -37,7 +39,7 @@ public class TCPController implements Initializable{
 	
 	@Override
 	public void initialize(URL arg0, ResourceBundle arg1) {
-		chatList.getItems().addListener((ListChangeListener<StackPane>) (c -> {
+		chatList.getItems().addListener((ListChangeListener<BorderPane>) (c -> {
 	        c.next();
 	        final int size = chatList.getItems().size();
 	        if (size > 0) {
@@ -58,12 +60,13 @@ public class TCPController implements Initializable{
 	    chatMessage.setWrapText(true);
 	    chatMessage.setMinHeight(60);
 	    
-
+	    BorderPane parent = new BorderPane();
+	   // StackPane parent = new StackPane();
 	    
 	    StackPane pane = new StackPane();
 
 	    pane.setMinHeight(60);
-	    pane.setPrefWidth(100);
+	    pane.setMaxWidth(180);
 	    
 	    
 	    final String cssWhite = "-fx-background-color: rgba(175, 175, 175, 1);\n" + "-fx-background-radius: 50;\n"
@@ -85,6 +88,7 @@ public class TCPController implements Initializable{
 		    chatMessage.setAlignment(Pos.CENTER_LEFT);
 		    pane.setStyle(cssWhite);
 		    chatMessage.setStyle("-fx-text-fill: #000;");
+		    parent.setLeft(pane);
 
 
 
@@ -92,6 +96,8 @@ public class TCPController implements Initializable{
 	    	pane.setAlignment(Pos.CENTER_RIGHT);
 		    chatMessage.setAlignment(Pos.CENTER_RIGHT);
 		    pane.setStyle(cssBlack);
+		    parent.setRight(pane);
+
 
 	    } else {
 	    	pane.setAlignment(Pos.CENTER);
@@ -99,10 +105,11 @@ public class TCPController implements Initializable{
 		    chatMessage.setStyle("-fx-text-fill: #000;");
 
 		    pane.setStyle(cssInfo);
+		    parent.setCenter(pane);
+
 	    }
 	    
-	    
-		chatList.getItems().add(pane);
+		chatList.getItems().add(parent);
 
 
 	}
